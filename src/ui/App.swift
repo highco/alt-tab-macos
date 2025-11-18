@@ -113,6 +113,13 @@ class App: AppCenterApplication {
 
     func focusTarget() {
         guard appIsBeingUsed else { return } // already hidden
+        
+        // Check if we're in apps section and should launch an app
+        if thumbnailsPanel.thumbnailsView.isInAppsSection {
+            thumbnailsPanel.thumbnailsView.launchFocusedApp()
+            return
+        }
+        
         let focusedWindow = Windows.focusedWindow()
         Logger.info(focusedWindow?.debugId)
         focusSelectedWindow(focusedWindow)
@@ -166,7 +173,12 @@ class App: AppCenterApplication {
         if direction == .up || direction == .down {
             thumbnailsPanel.thumbnailsView.navigateUpOrDown(direction, allowWrap: allowWrap)
         } else {
-            Windows.cycleFocusedWindowIndex(direction.step(), allowWrap: allowWrap)
+            // Check if we're in apps section
+            if thumbnailsPanel.thumbnailsView.isInAppsSection {
+                thumbnailsPanel.thumbnailsView.navigateLeftOrRight(direction)
+            } else {
+                Windows.cycleFocusedWindowIndex(direction.step(), allowWrap: allowWrap)
+            }
         }
     }
 

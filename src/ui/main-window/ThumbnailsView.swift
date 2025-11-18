@@ -7,12 +7,43 @@ class ThumbnailsView {
     var rows = [[ThumbnailView]]()
     static var thumbnailsWidth = CGFloat(0.0)
     static var thumbnailsHeight = CGFloat(0.0)
+    
+    // App launcher components
+    var appSearchField = AppSearchField()
+    var appIconViews = [AppIconView]()
+    var filteredApps: [InstalledApp] = []
+    var focusedAppIndex: Int? = nil
+    var isInAppsSection = false
+    let appsSectionHeight: CGFloat = 150 // search field + app icons row
+    let searchFieldHeight: CGFloat = 30
 
     init() {
         contentView = makeAppropriateEffectView()
         contentView.addSubview(scrollView)
         // TODO: think about this optimization more
         (1...20).forEach { _ in ThumbnailsView.recycledViews.append(ThumbnailView()) }
+        
+        // Initialize app icon views
+        (1...20).forEach { _ in appIconViews.append(AppIconView()) }
+        
+        // Setup app search field
+        setupAppSearchField()
+    }
+    
+    private func setupAppSearchField() {
+        appSearchField.onTextChange = { [weak self] query in
+            self?.filterApps(query: query)
+        }
+        contentView.addSubview(appSearchField)
+    }
+    
+    private func filterApps(query: String) {
+        filteredApps = InstalledAppsManager.shared.getFilteredApps(query: query)
+        // Update the focused app index if we're already in apps section
+        if isInAppsSection {
+            focusedAppIndex = filteredApps.isEmpty ? nil : 0
+        }
+        updateAppIconsLayout()
     }
 
     func updateBackgroundView() {
@@ -31,6 +62,15 @@ class ThumbnailsView {
         updateBackgroundView()
         for i in 0..<ThumbnailsView.recycledViews.count {
             ThumbnailsView.recycledViews[i] = ThumbnailView()
+        }
+        
+        // Reset app-related state
+        appSearchField.clear()
+        isInAppsSection = false
+        focusedAppIndex = nil
+        appIconViews.forEach { $0.removeFromSuperview() }
+        for i in 0..<appIconViews.count {
+            appIconViews[i] = AppIconView()
         }
     }
 
@@ -69,6 +109,39 @@ class ThumbnailsView {
     }
 
     func navigateUpOrDown(_ direction: Direction, allowWrap: Bool = true) {
+        // Handle navigation between apps and windows sections
+        if direction == .up && !isInAppsSection && rows.count > 0 {
+            // Check if we're on the first row of windows
+            if let currentRow = Windows.focusedWindow()?.rowIndex, currentRow == 0 {
+                // Move to apps section
+                if !filteredApps.isEmpty {
+                    // Clear window highlighting
+                    let oldFocusedIndex = Windows.focusedWindowIndex
+                    isInAppsSection = true
+                    focusedAppIndex = 0
+                    updateAppIconHighlights()
+                    // Unhighlight the previously focused window
+                    ThumbnailsView.recycledViews[oldFocusedIndex].drawHighlight()
+                    return
+                }
+            }
+        } else if direction == .down && isInAppsSection {
+            // Move from apps to windows
+            if !rows.isEmpty && !rows[0].isEmpty {
+                isInAppsSection = false
+                focusedAppIndex = nil
+                updateAppIconHighlights()
+                Windows.updateFocusedAndHoveredWindowIndex(0)
+                return
+            }
+        }
+        
+        // If in apps section, stay in apps section for up/down
+        if isInAppsSection {
+            return
+        }
+        
+        // Normal window navigation
         guard Windows.focusedWindowIndex < ThumbnailsView.recycledViews.count else { return }
         let focusedViewFrame = ThumbnailsView.recycledViews[Windows.focusedWindowIndex].frame
         let originCenter = NSMidX(focusedViewFrame)
@@ -85,9 +158,38 @@ class ThumbnailsView {
         guard let targetIndex = ThumbnailsView.recycledViews.firstIndex(of: targetView) else { return }
         Windows.updateFocusedAndHoveredWindowIndex(targetIndex)
     }
+    
+    func navigateLeftOrRight(_ direction: Direction) {
+        if isInAppsSection {
+            // Navigate within apps
+            guard let currentIndex = focusedAppIndex else { return }
+            let step = direction.step()
+            let newIndex = currentIndex + step
+            if newIndex >= 0 && newIndex < min(filteredApps.count, 10) {
+                focusedAppIndex = newIndex
+                updateAppIconHighlights()
+            }
+        }
+        // Windows left/right navigation is handled by existing code in App.swift
+    }
+    
+    func launchFocusedApp() {
+        if isInAppsSection, let index = focusedAppIndex, index < filteredApps.count {
+            launchApp(filteredApps[index])
+        }
+    }
 
     func updateItemsAndLayout() {
+        // Load initial apps list
+        if filteredApps.isEmpty {
+            filteredApps = InstalledAppsManager.shared.getFilteredApps(query: "")
+        }
+        
         let widthMax = ThumbnailsPanel.maxThumbnailsWidth().rounded()
+        
+        // Layout apps section first
+        layoutAppsSection(widthMax)
+        
         if let (maxX, maxY, labelHeight) = layoutThumbnailViews(widthMax) {
             layoutParentViews(maxX, widthMax, maxY, labelHeight)
             if Preferences.alignThumbnails == .center {
@@ -104,6 +206,62 @@ class ThumbnailsView {
             highlightStartView()
         }
     }
+    
+    private func layoutAppsSection(_ widthMax: CGFloat) {
+        // Position search field at top
+        let searchFieldWidth = widthMax
+        appSearchField.frame = NSRect(
+            x: Appearance.windowPadding,
+            y: Appearance.windowPadding,
+            width: searchFieldWidth,
+            height: searchFieldHeight
+        )
+        
+        // Position app icons below search field
+        updateAppIconsLayout()
+    }
+    
+    private func updateAppIconsLayout() {
+        let startY = Appearance.windowPadding + searchFieldHeight + 10
+        let spacing: CGFloat = 10
+        var currentX = Appearance.windowPadding + spacing
+        
+        // Remove old app icon views from superview
+        appIconViews.forEach { $0.removeFromSuperview() }
+        
+        // Show up to 10 apps
+        let appsToShow = min(filteredApps.count, 10)
+        for i in 0..<appsToShow {
+            let appView = appIconViews[i]
+            appView.frame = NSRect(
+                x: currentX,
+                y: startY,
+                width: AppIconView.cellWidth,
+                height: AppIconView.cellHeight
+            )
+            appView.updateWithApp(filteredApps[i])
+            appView.launchCallback = { [weak self] app in
+                self?.launchApp(app)
+            }
+            contentView.addSubview(appView)
+            currentX += AppIconView.cellWidth + spacing
+        }
+        
+        // Update highlight for focused app
+        updateAppIconHighlights()
+    }
+    
+    private func updateAppIconHighlights() {
+        for (index, appView) in appIconViews.enumerated() {
+            appView.isFocused = (focusedAppIndex == index && isInAppsSection)
+            appView.drawHighlight()
+        }
+    }
+    
+    private func launchApp(_ app: InstalledApp) {
+        InstalledAppsManager.shared.launchApp(app)
+        App.app.hideUi()
+    }
 
     private func layoutThumbnailViews(_ widthMax: CGFloat) -> (CGFloat, CGFloat, CGFloat)? {
         let labelHeight = ThumbnailsView.recycledViews.first!.label.fittingSize.height
@@ -111,7 +269,8 @@ class ThumbnailsView {
         let isLeftToRight = App.shared.userInterfaceLayoutDirection == .leftToRight
         let startingX = isLeftToRight ? Appearance.interCellPadding : widthMax - Appearance.interCellPadding
         var currentX = startingX
-        var currentY = Appearance.interCellPadding
+        // Offset Y to account for apps section
+        var currentY = Appearance.interCellPadding + appsSectionHeight
         var maxX = CGFloat(0)
         var maxY = currentY + height + Appearance.interCellPadding
         var newViews = [ThumbnailView]()
@@ -169,7 +328,8 @@ class ThumbnailsView {
         let frameWidth = ThumbnailsView.thumbnailsWidth + Appearance.windowPadding * 2
         var frameHeight = ThumbnailsView.thumbnailsHeight + Appearance.windowPadding * 2
         let originX = Appearance.windowPadding
-        var originY = Appearance.windowPadding
+        // Position scroll view below apps section
+        var originY = Appearance.windowPadding + appsSectionHeight
         if Preferences.appearanceStyle == .appIcons {
             // If there is title under the icon on the last line, the height of the title needs to be subtracted.
             frameHeight = frameHeight - Appearance.intraCellPadding - labelHeight
@@ -212,9 +372,12 @@ class ThumbnailsView {
     }
 
     private func highlightStartView() {
-        ThumbnailsView.highlight(Windows.focusedWindowIndex)
-        if let hoveredWindowIndex = Windows.hoveredWindowIndex {
-            ThumbnailsView.highlight(hoveredWindowIndex)
+        // Only highlight windows if we're not in apps section
+        if !isInAppsSection {
+            ThumbnailsView.highlight(Windows.focusedWindowIndex)
+            if let hoveredWindowIndex = Windows.hoveredWindowIndex {
+                ThumbnailsView.highlight(hoveredWindowIndex)
+            }
         }
     }
 

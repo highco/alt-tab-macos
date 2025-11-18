@@ -42,6 +42,11 @@ class ThumbnailsPanel: NSPanel {
     }
 
     override func orderOut(_ sender: Any?) {
+        // Clear search field when hiding
+        thumbnailsView.appSearchField.clear()
+        thumbnailsView.isInAppsSection = false
+        thumbnailsView.focusedAppIndex = nil
+        
         if Preferences.fadeOutAnimation {
             NSAnimationContext.runAnimationGroup(
                 { _ in animator().alphaValue = 0 },
@@ -58,6 +63,9 @@ class ThumbnailsPanel: NSPanel {
         makeKeyAndOrderFront(nil)
         MouseEvents.toggle(true)
         thumbnailsView.scrollView.flashScrollers()
+        
+        // Focus search field
+        makeFirstResponder(thumbnailsView.appSearchField)
     }
 
     static func maxThumbnailsWidth() -> CGFloat {

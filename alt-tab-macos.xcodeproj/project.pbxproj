@@ -208,6 +208,10 @@
 		D04BA1B133D53572D7B312C2 /* ThumbnailFontIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA1DF8CAB2FAB7FE9244B /* ThumbnailFontIconView.swift */; };
 		D04BA1C85041FB043FD43E65 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA05006D56C7AA011C0CE /* Localizable.strings */; };
 		D04BA1CEC6B9C8945FEC8740 /* ThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA258B56193958D60978A /* ThumbnailView.swift */; };
+		D04BA1F1A2B3C4D5E6F78901 /* InstalledApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA1F2A3B4C5D6E7F89012 /* InstalledApp.swift */; };
+		D04BA1F3A4B5C6D7E8F90123 /* InstalledAppsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA1F4A5B6C7D8E9F01234 /* InstalledAppsManager.swift */; };
+		D04BA1F5A6B7C8D9E0F12345 /* AppSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA1F6A7B8C9D0E1F23456 /* AppSearchField.swift */; };
+		D04BA1F7A8B9C0D1E2F34567 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA1F8A9B0C1D2E3F45678 /* AppIconView.swift */; };
 		D04BA22840D40E3885B2B29E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA3A932D3C8F850504919 /* InfoPlist.strings */; };
 		D04BA26A691D56031FCCF00C /* Sysctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA8DB8AA7E5570DAC568A /* Sysctl.swift */; };
 		D04BA276B3241D440F65B149 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA5C2BB394F1624DD5B45 /* InfoPlist.strings */; };
@@ -553,6 +557,10 @@
 		D04BA1FC9022590D7AA02486 /* 1 window - 1 line.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "1 window - 1 line.jpg"; sourceTree = "<group>"; };
 		D04BA2526DC6726E0F7ACF7C /* LabelAndControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LabelAndControl.swift; sourceTree = "<group>"; };
 		D04BA258B56193958D60978A /* ThumbnailView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailView.swift; sourceTree = "<group>"; };
+		D04BA1F2A3B4C5D6E7F89012 /* InstalledApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstalledApp.swift; sourceTree = "<group>"; };
+		D04BA1F4A5B6C7D8E9F01234 /* InstalledAppsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstalledAppsManager.swift; sourceTree = "<group>"; };
+		D04BA1F6A7B8C9D0E1F23456 /* AppSearchField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppSearchField.swift; sourceTree = "<group>"; };
+		D04BA1F8A9B0C1D2E3F45678 /* AppIconView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
 		D04BA26C75F76C277653C932 /* FeedbackWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackWindow.swift; sourceTree = "<group>"; };
 		D04BA27695D9A5824720BD7B /* BlacklistsTab.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlacklistsTab.swift; sourceTree = "<group>"; };
 		D04BA282BB16C1554595A968 /* Applications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Applications.swift; sourceTree = "<group>"; };
@@ -1291,6 +1299,8 @@
 				D04BA015A45DE7AFDC9794FE /* Window.swift */,
 				D04BA10777505D8A67ABD186 /* Application.swift */,
 				D04BA282BB16C1554595A968 /* Applications.swift */,
+				D04BA1F2A3B4C5D6E7F89012 /* InstalledApp.swift */,
+				D04BA1F4A5B6C7D8E9F01234 /* InstalledAppsManager.swift */,
 				D04BAB74451B79FE18B8BEDF /* BackgroundWork.swift */,
 				D04BACABD048E62EBE4576CC /* DebugProfile.swift */,
 				D04BAC8857A527C2E15D6598 /* events */,
@@ -1588,6 +1598,8 @@
 				D04BA1DF8CAB2FAB7FE9244B /* ThumbnailFontIconView.swift */,
 				D04BA258B56193958D60978A /* ThumbnailView.swift */,
 				D04BAA998119CAA8B70A2B67 /* ThumbnailsView.swift */,
+				D04BA1F6A7B8C9D0E1F23456 /* AppSearchField.swift */,
+				D04BA1F8A9B0C1D2E3F45678 /* AppIconView.swift */,
 				AA974BA829B7D84C0099A29E /* PreviewPanel.swift */,
 			);
 			path = "main-window";
@@ -2399,6 +2411,10 @@
 				D04BA69D47B5E60A6AD9CBD9 /* ThumbnailTitleView.swift in Sources */,
 				D04BA1B133D53572D7B312C2 /* ThumbnailFontIconView.swift in Sources */,
 				D04BA1CEC6B9C8945FEC8740 /* ThumbnailView.swift in Sources */,
+				D04BA1F1A2B3C4D5E6F78901 /* InstalledApp.swift in Sources */,
+				D04BA1F3A4B5C6D7E8F90123 /* InstalledAppsManager.swift in Sources */,
+				D04BA1F5A6B7C8D9E0F12345 /* AppSearchField.swift in Sources */,
+				D04BA1F7A8B9C0D1E2F34567 /* AppIconView.swift in Sources */,
 				D04BA14D93726795A6937832 /* LabelAndControl.swift in Sources */,
 				D04BA7BE7F3DD24D58ACE942 /* AppearanceTab.swift in Sources */,
 				D04BAD1BE9DC22C48C53D195 /* AboutTab.swift in Sources */,
