@@ -73,7 +73,7 @@ class ControlsTab {
     }
 
     private static func shortcutTab(_ index: Int) -> ([NSView], [NSView], TableGroupView) {
-        var holdShortcut = LabelAndControl.makeLabelWithRecorder(NSLocalizedString("Hold", comment: ""), Preferences.indexToName("holdShortcut", index), Preferences.holdShortcut[index], false, labelPosition: .leftWithoutSeparator)
+        var holdShortcut = LabelAndControl.makeLabelWithRecorder(NSLocalizedString("Hold", comment: ""), Preferences.indexToName("holdShortcut", index), Preferences.holdShortcut[index], true, labelPosition: .leftWithoutSeparator)
         holdShortcut.append(LabelAndControl.makeLabel(NSLocalizedString("and press", comment: "")))
         let nextWindowShortcut = LabelAndControl.makeLabelWithRecorder(NSLocalizedString("Select next window", comment: ""), Preferences.indexToName("nextWindowShortcut", index), Preferences.nextWindowShortcut[index], labelPosition: .right)
         let tab = controlTab(index, holdShortcut + [nextWindowShortcut[0]])
@@ -178,10 +178,23 @@ class ControlsTab {
         let controlId = sender.identifier!.rawValue
         if controlId.hasPrefix("holdShortcut") {
             let i = Preferences.nameToIndex(controlId)
-            addShortcut(.up, .global, Shortcut(keyEquivalent: Preferences.holdShortcut[i])!, controlId, i)
-            if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
-                nextWindowShortcut.restrictModifiers([(sender as! CustomRecorderControl).objectValue!.modifierFlags])
-                shortcutChangedCallback(nextWindowShortcut)
+            let control = sender as! CustomRecorderControl
+            if let objectValue = control.objectValue {
+                let shortcut = Shortcut(keyEquivalent: Preferences.holdShortcut[i])
+                if let shortcut = shortcut {
+                    addShortcut(.up, .global, shortcut, controlId, i)
+                    if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
+                        nextWindowShortcut.restrictModifiers([objectValue.modifierFlags])
+                        shortcutChangedCallback(nextWindowShortcut)
+                    }
+                }
+            } else {
+                // objectValue is nil, meaning the shortcut was cleared
+                removeShortcutIfExists(controlId)
+                if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
+                    nextWindowShortcut.restrictModifiers([])
+                    shortcutChangedCallback(nextWindowShortcut)
+                }
             }
         } else {
             let newValue = combineHoldAndNextWindow(controlId, sender)
