@@ -288,6 +288,8 @@
 		D04BAFB973C3D28718FAEB87 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BACD976030676FD0761D5 /* Windows.swift */; };
 		D04BAFBC862BA5FE0294EA7A /* AXUIElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA6F823BC0EDA9AA4B80A /* AXUIElement.swift */; };
 		D04BAFF30A98CF287F85DA1E /* BlacklistsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA27695D9A5824720BD7B /* BlacklistsTab.swift */; };
+		F0A1F4FA29C6E0F8C8E1A1A1 /* ApplicationsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A1F4F829C6E0F8C8E1A1A1 /* ApplicationsCatalog.swift */; };
+		F0A1F50729C6E0F8C8E1A1A1 /* ApplicationsShelfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A1F50529C6E0F8C8E1A1A1 /* ApplicationsShelfView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -556,6 +558,7 @@
 		D04BA26C75F76C277653C932 /* FeedbackWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackWindow.swift; sourceTree = "<group>"; };
 		D04BA27695D9A5824720BD7B /* BlacklistsTab.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlacklistsTab.swift; sourceTree = "<group>"; };
 		D04BA282BB16C1554595A968 /* Applications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Applications.swift; sourceTree = "<group>"; };
+		F0A1F4F829C6E0F8C8E1A1A1 /* ApplicationsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationsCatalog.swift; sourceTree = "<group>"; };
 		D04BA2A68FFD585C3A64434A /* zh-CN */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = InfoPlist.strings; sourceTree = "<group>"; };
 		D04BA2C7B51F68651B3C60E2 /* 6 windows - 1 line.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "6 windows - 1 line.jpg"; sourceTree = "<group>"; };
 		D04BA2D022B64A876CCA6BB7 /* apple-touch-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "apple-touch-icon.png"; sourceTree = "<group>"; };
@@ -598,6 +601,7 @@
 		D04BA62D5EACAAAD7BCD3E79 /* release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = release.xcconfig; sourceTree = "<group>"; };
 		D04BA64F1F344007EA13BA05 /* AppearanceTab.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppearanceTab.swift; sourceTree = "<group>"; };
 		D04BA653BD073CB58E2CFC93 /* ThumbnailsPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailsPanel.swift; sourceTree = "<group>"; };
+		F0A1F50529C6E0F8C8E1A1A1 /* ApplicationsShelfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationsShelfView.swift; sourceTree = "<group>"; };
 		D04BA662DF59DF9A97FDA598 /* de */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = de; path = Localizable.strings; sourceTree = "<group>"; };
 		D04BA67D904743A293768CB1 /* frontpage.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = frontpage.jpg; sourceTree = "<group>"; };
 		D04BA68C2561D9EE4FD851B8 /* NSScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSScreen.swift; sourceTree = "<group>"; };
@@ -1301,6 +1305,7 @@
 				BF0C8D57C86AF492D43A576D /* AppearanceTestable.swift */,
 				BF0C8998862E0E04D60CACBC /* MacroPreferences.swift */,
 				BF0C8F58B38F29B2662E6C2D /* PreferencesMigrations.swift */,
+				F0A1F4F829C6E0F8C8E1A1A1 /* ApplicationsCatalog.swift */,
 			);
 			path = logic;
 			sourceTree = "<group>";
@@ -1584,6 +1589,7 @@
 			children = (
 				BF0C82817AEE4AF34D03CA9D /* ThumbnailsPanelBackgroundView.swift */,
 				D04BA653BD073CB58E2CFC93 /* ThumbnailsPanel.swift */,
+				F0A1F50529C6E0F8C8E1A1A1 /* ApplicationsShelfView.swift */,
 				D04BAD1297730B191E96E7FE /* ThumbnailTitleView.swift */,
 				D04BA1DF8CAB2FAB7FE9244B /* ThumbnailFontIconView.swift */,
 				D04BA258B56193958D60978A /* ThumbnailView.swift */,
@@ -2391,6 +2397,7 @@
 				5F21C9E82C6E96A00091F72F /* SheetWindow.swift in Sources */,
 				D04BA737008AA2CD4E230A21 /* Application.swift in Sources */,
 				D04BA2A6FF9DDDC5A1A68E36 /* Applications.swift in Sources */,
+				F0A1F4FA29C6E0F8C8E1A1A1 /* ApplicationsCatalog.swift in Sources */,
 				AA974BA929B7D84C0099A29E /* PreviewPanel.swift in Sources */,
 				D04BA3CF766857381519B892 /* BackgroundWork.swift in Sources */,
 				D04BA48B00B4211A465C7337 /* DebugProfile.swift in Sources */,
@@ -2411,6 +2418,7 @@
 				D04BAABE804F3769CE22BEB6 /* HyperlinkLabel.swift in Sources */,
 				D04BAD2A7F2E8BF64EE982E9 /* TextArea.swift in Sources */,
 				D04BA11E56383D082D7BE5A5 /* ThumbnailsView.swift in Sources */,
+				F0A1F50729C6E0F8C8E1A1A1 /* ApplicationsShelfView.swift in Sources */,
 				5F21C9E42C6E94700091F72F /* CustomizeStyleSheet.swift in Sources */,
 				D04BA1621718FF26F8D5E75D /* CustomRecorderControl.swift in Sources */,
 				D04BA1637E125D38546C26E2 /* StackView.swift in Sources */,

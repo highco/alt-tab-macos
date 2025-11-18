@@ -1,7 +1,12 @@
 import Cocoa
 
 class ThumbnailsPanel: NSPanel {
+    private static let shelfSpacing: CGFloat = 12
+
     var thumbnailsView = ThumbnailsView()
+    private let applicationsShelfView = ApplicationsShelfView()
+    private let panelBackgroundView: EffectView = makeAppropriateEffectView()
+
     override var canBecomeKey: Bool { true }
 
     convenience init() {
@@ -12,7 +17,12 @@ class ThumbnailsPanel: NSPanel {
         hidesOnDeactivate = false
         titleVisibility = .hidden
         backgroundColor = .clear
-        contentView! = thumbnailsView.contentView
+        contentView! = panelBackgroundView
+        panelBackgroundView.addSubview(thumbnailsView.contentView)
+        panelBackgroundView.addSubview(applicationsShelfView)
+        applicationsShelfView.onLaunchRequested = { [weak self] item in
+            self?.launchApplication(item)
+        }
         // triggering AltTab before or during Space transition animation brings the window on the Space post-transition
         collectionBehavior = .canJoinAllSpaces
         // 2nd highest level possible; this allows the app to go on top of context menus
@@ -28,6 +38,7 @@ class ThumbnailsPanel: NSPanel {
     func updateAppearance() {
         hasShadow = Appearance.enablePanelShadow
         appearance = NSAppearance(named: Appearance.currentTheme == .dark ? .vibrantDark : .vibrantLight)
+        panelBackgroundView.updateAppearance()
     }
 
     func updateContents() {
@@ -36,7 +47,7 @@ class ThumbnailsPanel: NSPanel {
         CATransaction.setDisableActions(true)
         thumbnailsView.updateItemsAndLayout()
         guard App.app.appIsBeingUsed else { return }
-        setContentSize(thumbnailsView.contentView.frame.size)
+        layoutShelfAndThumbnails()
         guard App.app.appIsBeingUsed else { return }
         NSScreen.preferred.repositionPanel(self)
     }
@@ -54,10 +65,14 @@ class ThumbnailsPanel: NSPanel {
 
     func show() {
         updateAppearance()
+        refreshApplicationsShelf()
         alphaValue = 1
         makeKeyAndOrderFront(nil)
         MouseEvents.toggle(true)
         thumbnailsView.scrollView.flashScrollers()
+        DispatchQueue.main.async { [weak self] in
+            self?.applicationsShelfView.focusSearchField()
+        }
     }
 
     static func maxThumbnailsWidth() -> CGFloat {
@@ -75,7 +90,58 @@ class ThumbnailsPanel: NSPanel {
     }
 
     static func maxThumbnailsHeight() -> CGFloat {
-        return (NSScreen.preferred.frame.height * Appearance.maxHeightOnScreen - Appearance.windowPadding * 2).rounded()
+        let available = NSScreen.preferred.frame.height * Appearance.maxHeightOnScreen - Appearance.windowPadding * 2
+        let reserved = ApplicationsShelfView.defaultHeight + ThumbnailsPanel.shelfSpacing
+        return max(0, (available - reserved).rounded())
+    }
+
+    private func refreshApplicationsShelf() {
+        applicationsShelfView.reset()
+        applicationsShelfView.configure(items: ApplicationsCatalog.shared.orderedItems())
+    }
+
+    private func layoutShelfAndThumbnails() {
+        let thumbnailsSize = thumbnailsView.contentView.frame.size
+        thumbnailsView.contentView.frame.origin = .zero
+        let width = thumbnailsSize.width
+        let shelfHeight = ApplicationsShelfView.defaultHeight
+        applicationsShelfView.frame = NSRect(
+            x: 0,
+            y: thumbnailsSize.height + ThumbnailsPanel.shelfSpacing,
+            width: width,
+            height: shelfHeight
+        )
+        let totalHeight = thumbnailsSize.height + ThumbnailsPanel.shelfSpacing + shelfHeight
+        panelBackgroundView.frame = NSRect(origin: .zero, size: NSSize(width: width, height: totalHeight))
+        setContentSize(panelBackgroundView.frame.size)
+    }
+
+    private func launchApplication(_ item: ApplicationsCatalogItem) {
+        ApplicationsCatalog.shared.markAsLaunched(item)
+        if #available(macOS 10.15, *) {
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.activates = true
+            NSWorkspace.shared.openApplication(at: item.url, configuration: configuration) { _, error in
+                self.handleLaunchCompletion(item: item, error: error)
+            }
+        } else {
+            do {
+                try NSWorkspace.shared.launchApplication(at: item.url, options: [], configuration: [:])
+                handleLaunchCompletion(item: item, error: nil)
+            } catch {
+                handleLaunchCompletion(item: item, error: error)
+            }
+        }
+    }
+
+    private func handleLaunchCompletion(item: ApplicationsCatalogItem, error: Error?) {
+        if let error = error {
+            Logger.error("Failed to launch \(item.name): \(error.localizedDescription)")
+            return
+        }
+        DispatchQueue.main.async {
+            App.app.hideUi()
+        }
     }
 }
 

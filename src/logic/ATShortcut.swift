@@ -19,25 +19,39 @@ class ATShortcut {
     }
 
     func matches(_ id: Int?, _ shortcutState: ShortcutState?, _ keyCode: UInt32?, _ modifiers: NSEvent.ModifierFlags?) -> Bool {
-        if let id, let shortcutState {
-            let shortcutIndex = id
-            let shortcutId = KeyboardEventsTestable.globalShortcutsIds.first { $0.value == shortcutIndex }!.key
-            if shortcutId == self.id {
-                state = shortcutState
-                if (triggerPhase == .down && state == .down) || (triggerPhase == .up && state == .up) {
-                    return true
-                }
-            }
+        if processShortcutIdentifier(id: id, shortcutState: shortcutState) {
+            return true
         }
-        if let modifiers {
-            let modifiersMatch_ = modifiersMatch(cocoaToCarbonFlags(modifiers))
-            let newState: ShortcutState = ((shortcut.keyCode == .none || keyCode == shortcut.carbonKeyCode) && modifiersMatch_) ? .down : .up
-            let flipped = state != newState
-            state = newState
-            // state == down is unambiguous; state == up is hard to match with a particular shortcut, unless it's been flipped
-            if (triggerPhase == .down && state == .down) || (triggerPhase == .up && state == .up && flipped) {
-                return true
-            }
+        if let modifiers, processModifierMatch(modifiers: modifiers, keyCode: keyCode) {
+            return true
+        }
+        return false
+    }
+
+    private func processShortcutIdentifier(id: Int?, shortcutState: ShortcutState?) -> Bool {
+        guard let id = id,
+              let shortcutState = shortcutState,
+              let shortcutId = KeyboardEventsTestable.globalShortcutsIds.first(where: { $0.value == id })?.key,
+              shortcutId == self.id else {
+            return false
+        }
+        state = shortcutState
+        let isDownTrigger = triggerPhase == .down && state == .down
+        let isUpTrigger = triggerPhase == .up && state == .up
+        return isDownTrigger || isUpTrigger
+    }
+
+    private func processModifierMatch(modifiers: NSEvent.ModifierFlags, keyCode: UInt32?) -> Bool {
+        let modifiersAreMatching = modifiersMatch(cocoaToCarbonFlags(modifiers))
+        let keysMatch = shortcut.keyCode == .none || keyCode == shortcut.carbonKeyCode
+        let newState: ShortcutState = (keysMatch && modifiersAreMatching) ? .down : .up
+        let stateChanged = state != newState
+        state = newState
+        if triggerPhase == .down && state == .down {
+            return true
+        }
+        if triggerPhase == .up && state == .up && stateChanged {
+            return true
         }
         return false
     }
