@@ -1,0 +1,155 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build AltTab (Debug)",
+			"type": "shell",
+			"command": "xcodebuild",
+			"args": [
+				"-workspace",
+				"alt-tab-macos.xcworkspace",
+				"-scheme",
+				"Debug",
+				"-configuration",
+				"Debug",
+				"-derivedDataPath",
+				"./build"
+			],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": {
+				"owner": "xcode",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"severity": 4,
+					"message": 5
+				}
+			},
+			"options": {
+				"statusbar": {
+					"hide": true
+				}
+			}
+		},
+		{
+			"label": "Build AltTab (Release)",
+			"type": "shell",
+			"command": "xcodebuild",
+			"args": [
+				"-workspace",
+				"alt-tab-macos.xcworkspace",
+				"-scheme",
+				"Release",
+				"-configuration",
+				"Release",
+				"-derivedDataPath",
+				"./build"
+			],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": {
+				"owner": "xcode",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"severity": 4,
+					"message": 5
+				}
+			},
+			"options": {
+				"statusbar": {
+					"hide": true
+				}
+			}
+		},
+		{
+			"label": "Clean Build Folder",
+			"type": "shell",
+			"command": "rm",
+			"args": [
+				"-rf",
+				"./build"
+			],
+			"presentation": {
+				"reveal": "silent",
+				"panel": "shared"
+			},
+			"options": {
+				"statusbar": {
+					"hide": true
+				}
+			}
+		},
+		{
+			"label": "Build and Run",
+			"type": "shell",
+			"command": "xcodebuild -workspace alt-tab-macos.xcworkspace -scheme Debug -configuration Debug -derivedDataPath ./build && open ./build/Build/Products/Debug/AltTab.app",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": {
+				"owner": "xcode",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"severity": 4,
+					"message": 5
+				}
+			}
+		},
+		{
+			"label": "Open Built App",
+			"type": "shell",
+			"command": "open",
+			"args": [
+				"./build/Build/Products/Debug/AltTab.app"
+			],
+			"presentation": {
+				"reveal": "silent"
+			},
+			"options": {
+				"statusbar": {
+					"hide": true
+				}
+			}
+		}
+	]
+}
+
+

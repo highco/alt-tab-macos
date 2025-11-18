@@ -1,0 +1,16 @@
+{
+	"swift.sourcekit-lsp.serverArguments": [
+		"--default-workspace-type",
+		"buildServer"
+	],
+	"swift.path": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+	"swift.diagnosticsCollection": "onlySwiftc",
+	"sourcekit-lsp.serverPath": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+	"sourcekit-lsp.toolchainPath": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
+	"files.watcherExclude": {
+		"**/build/**": true,
+		"**/Pods/**": true,
+		"**/.build/**": true,
+		"**/DerivedData/**": true
+	}
+}
