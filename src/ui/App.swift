@@ -118,6 +118,29 @@ class App: AppCenterApplication {
         focusSelectedWindow(focusedWindow)
     }
 
+    func showUiOnHoldShortcut() {
+        if appIsBeingUsed {
+            hideUi()
+        } else {
+            showUi(shortcutIndex)
+        }
+    }
+
+    func handleHoldShortcutRelease() {
+        guard appIsBeingUsed else { return }
+        if thumbnailsPanel.isSearchFieldFocused() {
+            // Keep UI visible when search field is focused
+            return
+        }
+        // Focus selected window and hide UI
+        focusSelectedWindow(Windows.focusedWindow())
+    }
+
+    func cycleToNextWindow() {
+        cycleSelection(.leading)
+        KeyRepeatTimer.toggleRepeatingKeyNextWindow()
+    }
+
     @objc func checkForUpdatesNow(_ sender: NSMenuItem) {
         PoliciesTab.checkForUpdatesNow(sender)
     }
@@ -241,9 +264,6 @@ class App: AppCenterApplication {
                     self.delayedDisplayScheduled -= 1
                 }
             }
-        } else {
-            cycleSelection(.leading)
-            KeyRepeatTimer.toggleRepeatingKeyNextWindow()
         }
     }
 

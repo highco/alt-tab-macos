@@ -4,7 +4,7 @@ class ThumbnailsPanel: NSPanel {
     private static let shelfSpacing: CGFloat = 12
 
     var thumbnailsView = ThumbnailsView()
-    private let applicationsShelfView = ApplicationsShelfView()
+    let applicationsShelfView = ApplicationsShelfView()
     private let panelBackgroundView: EffectView = makeAppropriateEffectView()
     private var catalogObserver: NSObjectProtocol?
 
@@ -62,6 +62,10 @@ class ThumbnailsPanel: NSPanel {
 
     func handleShelfArrowKey(_ direction: Direction) {
         applicationsShelfView.handleArrowKey(direction)
+    }
+
+    func isSearchFieldFocused() -> Bool {
+        return firstResponder == applicationsShelfView.searchField
     }
 
     override func orderOut(_ sender: Any?) {

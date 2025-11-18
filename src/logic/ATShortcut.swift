@@ -68,17 +68,25 @@ class ATShortcut {
 
     func shouldTrigger() -> Bool {
         if scope == .global {
-            if triggerPhase == .down && (!App.app.appIsBeingUsed || index == nil || index == App.app.shortcutIndex) {
-                return true
+            if triggerPhase == .down {
+                let indexMatches = index == nil || index == App.app.shortcutIndex
+                return !App.app.appIsBeingUsed || indexMatches
             }
-            if triggerPhase == .up && App.app.appIsBeingUsed && (index == nil || index == App.app.shortcutIndex) && !App.app.forceDoNothingOnRelease && Preferences.shortcutStyle[App.app.shortcutIndex] == .focusOnRelease {
-                return true
+            // Handle new holdShortcutRelease actions
+            if triggerPhase == .up && id.hasSuffix("Release") {
+                let indexMatches = index == nil || index == App.app.shortcutIndex
+                return App.app.appIsBeingUsed && indexMatches
+            }
+            // Handle legacy behavior for other .up shortcuts
+            if triggerPhase == .up {
+                let indexMatches = index == nil || index == App.app.shortcutIndex
+                let shouldFocusOnRelease = Preferences.shortcutStyle[App.app.shortcutIndex] == .focusOnRelease
+                return App.app.appIsBeingUsed && indexMatches && !App.app.forceDoNothingOnRelease && shouldFocusOnRelease
             }
         }
         if scope == .local {
-            if App.app.appIsBeingUsed && (index == nil || index == App.app.shortcutIndex) {
-                return true
-            }
+            let indexMatches = index == nil || index == App.app.shortcutIndex
+            return App.app.appIsBeingUsed && indexMatches
         }
         return false
     }
@@ -96,14 +104,29 @@ class ATShortcut {
         // The events can be disordered between sources, but not within each source
         // Another issue is events being dropped by macOS, which we never receive
         // Knowing this, we handle these edge-cases by double checking if holdShortcut is UP, when any shortcut state is UP
-        // If it is, then we trigger the holdShortcut action
-        if App.app.appIsBeingUsed && !App.app.forceDoNothingOnRelease && Preferences.shortcutStyle[App.app.shortcutIndex] == .focusOnRelease {
-            if let currentHoldShortcut = ControlsTab.shortcuts[Preferences.indexToName("holdShortcut", App.app.shortcutIndex)],
-               id == currentHoldShortcut.id {
+        // If it is, then we trigger the holdShortcut release action
+        if App.app.appIsBeingUsed {
+            // Check for new holdShortcutRelease shortcuts
+            if let releaseShortcut = ControlsTab.shortcuts[Preferences.indexToName("holdShortcut", App.app.shortcutIndex) + "Release"],
+               id == releaseShortcut.id || id.hasPrefix("holdShortcut") {
                 let currentModifiers = cocoaToCarbonFlags(ModifierFlags.current)
-                if currentModifiers != (currentModifiers | (currentHoldShortcut.shortcut.carbonModifierFlags)) {
-                    currentHoldShortcut.state = .up
-                    ControlsTab.executeAction(currentHoldShortcut.id)
+                let holdShortcutId = Preferences.indexToName("holdShortcut", App.app.shortcutIndex)
+                if let currentHoldShortcut = ControlsTab.shortcuts[holdShortcutId] {
+                    if currentModifiers != (currentModifiers | (currentHoldShortcut.shortcut.carbonModifierFlags)) {
+                        currentHoldShortcut.state = .up
+                        ControlsTab.executeAction(holdShortcutId + "Release")
+                    }
+                }
+            }
+            // Handle legacy behavior
+            if !App.app.forceDoNothingOnRelease && Preferences.shortcutStyle[App.app.shortcutIndex] == .focusOnRelease {
+                if let currentHoldShortcut = ControlsTab.shortcuts[Preferences.indexToName("holdShortcut", App.app.shortcutIndex)],
+                   id == currentHoldShortcut.id {
+                    let currentModifiers = cocoaToCarbonFlags(ModifierFlags.current)
+                    if currentModifiers != (currentModifiers | (currentHoldShortcut.shortcut.carbonModifierFlags)) {
+                        currentHoldShortcut.state = .up
+                        ControlsTab.executeAction(currentHoldShortcut.id)
+                    }
                 }
             }
         }

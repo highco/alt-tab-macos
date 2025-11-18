@@ -6,13 +6,16 @@ class ControlsTab {
     static var shortcuts = [String: ATShortcut]()
     static var shortcutControls = [String: (CustomRecorderControl, String)]()
     static var shortcutsActions = [
-        "holdShortcut": { App.app.focusTarget() },
-        "holdShortcut2": { App.app.focusTarget() },
-        "holdShortcut3": { App.app.focusTarget() },
+        "holdShortcut": { App.app.showUiOnHoldShortcut() },
+        "holdShortcut2": { App.app.showUiOnHoldShortcut() },
+        "holdShortcut3": { App.app.showUiOnHoldShortcut() },
+        "holdShortcutRelease": { App.app.handleHoldShortcutRelease() },
+        "holdShortcut2Release": { App.app.handleHoldShortcutRelease() },
+        "holdShortcut3Release": { App.app.handleHoldShortcutRelease() },
         "focusWindowShortcut": { App.app.focusTarget() },
-        "nextWindowShortcut": { App.app.showUiOrCycleSelection(0, false) },
-        "nextWindowShortcut2": { App.app.showUiOrCycleSelection(1, false) },
-        "nextWindowShortcut3": { App.app.showUiOrCycleSelection(2, false) },
+        "nextWindowShortcut": { App.app.cycleToNextWindow() },
+        "nextWindowShortcut2": { App.app.cycleToNextWindow() },
+        "nextWindowShortcut3": { App.app.cycleToNextWindow() },
         "previousWindowShortcut": { App.app.previousWindowShortcutWithRepeatingKey() },
         "→": { App.app.thumbnailsPanel.handleShelfArrowKey(.right) },
         "←": { App.app.thumbnailsPanel.handleShelfArrowKey(.left) },
@@ -182,7 +185,9 @@ class ControlsTab {
             if let objectValue = control.objectValue {
                 let shortcut = Shortcut(keyEquivalent: Preferences.holdShortcut[i])
                 if let shortcut = shortcut {
-                    addShortcut(.up, .global, shortcut, controlId, i)
+                    // Register both down and up phases for holdShortcut
+                    addShortcut(.down, .global, shortcut, controlId, i)
+                    addShortcut(.up, .global, shortcut, controlId + "Release", i)
                     if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
                         nextWindowShortcut.restrictModifiers([objectValue.modifierFlags])
                         shortcutChangedCallback(nextWindowShortcut)
@@ -191,6 +196,7 @@ class ControlsTab {
             } else {
                 // objectValue is nil, meaning the shortcut was cleared
                 removeShortcutIfExists(controlId)
+                removeShortcutIfExists(controlId + "Release")
                 if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
                     nextWindowShortcut.restrictModifiers([])
                     shortcutChangedCallback(nextWindowShortcut)
