@@ -2,6 +2,7 @@ import Cocoa
 
 class AppSearchField: NSTextField {
     var onTextChange: ((String) -> Void)?
+    var onEnterPressed: (() -> Void)?
     
     init() {
         super.init(frame: .zero)
@@ -54,8 +55,9 @@ extension AppSearchField: NSTextFieldDelegate {
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         // Allow certain keys to be handled by the text field
         if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-            // Enter key - let the app handle it for launching
-            return false
+            // Enter key - launch the focused app
+            onEnterPressed?()
+            return true
         } else if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
             // Escape key - clear field or let app handle hiding
             if !stringValue.isEmpty {

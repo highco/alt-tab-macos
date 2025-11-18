@@ -34,16 +34,32 @@ class ThumbnailsView {
         appSearchField.onTextChange = { [weak self] query in
             self?.filterApps(query: query)
         }
+        appSearchField.onEnterPressed = { [weak self] in
+            self?.launchFocusedApp()
+        }
         contentView.addSubview(appSearchField)
     }
     
     private func filterApps(query: String) {
         filteredApps = InstalledAppsManager.shared.getFilteredApps(query: query)
-        // Update the focused app index if we're already in apps section
-        if isInAppsSection {
-            focusedAppIndex = filteredApps.isEmpty ? nil : 0
+        
+        // Automatically enter apps section when user starts typing
+        if !query.isEmpty {
+            if !filteredApps.isEmpty {
+                isInAppsSection = true
+                focusedAppIndex = 0
+            } else {
+                isInAppsSection = false
+                focusedAppIndex = nil
+            }
+        } else {
+            // Exit apps section when search is cleared
+            isInAppsSection = false
+            focusedAppIndex = nil
         }
+        
         updateAppIconsLayoutWithPositions()
+        updateAppIconHighlights()
     }
 
     func updateBackgroundView() {
@@ -109,12 +125,19 @@ class ThumbnailsView {
     }
 
     func navigateUpOrDown(_ direction: Direction, allowWrap: Bool = true) {
-        // Handle navigation between apps and windows sections
+        // When in apps section (e.g., when searching), stay in apps section
+        if isInAppsSection {
+            // Apps are laid out in a single row, so up/down doesn't navigate
+            // This prevents arrow keys from controlling ThumbnailsView while searching
+            return
+        }
+        
+        // Handle navigation between apps and windows sections (when not searching)
         if direction == .up && !isInAppsSection && rows.count > 0 {
             // Check if we're on the first row of windows
             if let currentRow = Windows.focusedWindow()?.rowIndex, currentRow == 0 {
                 // Move to apps section
-                if !filteredApps.isEmpty {
+                if !filteredApps.isEmpty && appSearchField.stringValue.isEmpty {
                     // Clear window highlighting
                     let oldFocusedIndex = Windows.focusedWindowIndex
                     isInAppsSection = true
@@ -125,20 +148,6 @@ class ThumbnailsView {
                     return
                 }
             }
-        } else if direction == .down && isInAppsSection {
-            // Move from apps to windows
-            if !rows.isEmpty && !rows[0].isEmpty {
-                isInAppsSection = false
-                focusedAppIndex = nil
-                updateAppIconHighlights()
-                Windows.updateFocusedAndHoveredWindowIndex(0)
-                return
-            }
-        }
-        
-        // If in apps section, stay in apps section for up/down
-        if isInAppsSection {
-            return
         }
         
         // Normal window navigation
@@ -161,14 +170,21 @@ class ThumbnailsView {
     
     func navigateLeftOrRight(_ direction: Direction) {
         if isInAppsSection {
-            // Navigate within apps
+            // Navigate within apps with wrapping
             guard let currentIndex = focusedAppIndex else { return }
+            let maxApps = min(filteredApps.count, 10)
             let step = direction.step()
-            let newIndex = currentIndex + step
-            if newIndex >= 0 && newIndex < min(filteredApps.count, 10) {
-                focusedAppIndex = newIndex
-                updateAppIconHighlights()
+            var newIndex = currentIndex + step
+            
+            // Wrap around at the boundaries
+            if newIndex < 0 {
+                newIndex = maxApps - 1
+            } else if newIndex >= maxApps {
+                newIndex = 0
             }
+            
+            focusedAppIndex = newIndex
+            updateAppIconHighlights()
         }
         // Windows left/right navigation is handled by existing code in App.swift
     }
