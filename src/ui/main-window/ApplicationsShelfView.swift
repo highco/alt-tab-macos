@@ -8,6 +8,7 @@ class ApplicationsShelfView: NSView {
     private let searchFieldHeight: CGFloat = 34
     private let buttonSize = NSSize(width: 90, height: 82)
     private let buttonSpacing: CGFloat = 10
+    private let maxVisibleItems = 10
 
     let searchField = NSSearchField()
     private let scrollView = NSScrollView(frame: .zero)
@@ -123,6 +124,9 @@ class ApplicationsShelfView: NSView {
             filteredItems = items
         } else {
             filteredItems = items.filter { $0.name.localizedCaseInsensitiveContains(text) }
+        }
+        if filteredItems.count > maxVisibleItems {
+            filteredItems = Array(filteredItems.prefix(maxVisibleItems))
         }
         rebuildButtons()
         selectFirstMatch()

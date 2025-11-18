@@ -6,6 +6,7 @@ class ThumbnailsPanel: NSPanel {
     var thumbnailsView = ThumbnailsView()
     private let applicationsShelfView = ApplicationsShelfView()
     private let panelBackgroundView: EffectView = makeAppropriateEffectView()
+    private var catalogObserver: NSObjectProtocol?
 
     override var canBecomeKey: Bool { true }
 
@@ -33,6 +34,13 @@ class ThumbnailsPanel: NSPanel {
         // for VoiceOver
         setAccessibilityLabel(App.name)
         updateAppearance()
+        observeApplicationsCatalog()
+    }
+
+    deinit {
+        if let observer = catalogObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     func updateAppearance() {
@@ -69,7 +77,7 @@ class ThumbnailsPanel: NSPanel {
 
     func show() {
         updateAppearance()
-        refreshApplicationsShelf()
+        refreshApplicationsShelf(resetSearch: true)
         alphaValue = 1
         makeKeyAndOrderFront(nil)
         MouseEvents.toggle(true)
@@ -99,8 +107,10 @@ class ThumbnailsPanel: NSPanel {
         return max(0, (available - reserved).rounded())
     }
 
-    private func refreshApplicationsShelf() {
-        applicationsShelfView.reset()
+    private func refreshApplicationsShelf(resetSearch: Bool = false) {
+        if resetSearch {
+            applicationsShelfView.reset()
+        }
         applicationsShelfView.configure(items: ApplicationsCatalog.shared.orderedItems())
     }
 
@@ -145,6 +155,17 @@ class ThumbnailsPanel: NSPanel {
         }
         DispatchQueue.main.async {
             App.app.hideUi()
+        }
+    }
+
+    private func observeApplicationsCatalog() {
+        catalogObserver = NotificationCenter.default.addObserver(
+            forName: .applicationsCatalogDidUpdate,
+            object: ApplicationsCatalog.shared,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self, App.app.appIsBeingUsed else { return }
+            self.refreshApplicationsShelf()
         }
     }
 }
