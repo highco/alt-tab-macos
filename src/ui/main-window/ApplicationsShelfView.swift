@@ -57,6 +57,15 @@ class ApplicationsShelfView: NSView {
         select(index: next)
     }
 
+    func handleArrowKey(_ direction: Direction) {
+        switch direction {
+        case .left, .up, .trailing:
+            moveSelection(offset: -1)
+        case .right, .down, .leading:
+            moveSelection(offset: 1)
+        }
+    }
+
     func selectFirstMatch() {
         if filteredItems.isEmpty {
             select(index: nil)

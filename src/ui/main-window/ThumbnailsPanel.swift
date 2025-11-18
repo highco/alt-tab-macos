@@ -52,6 +52,10 @@ class ThumbnailsPanel: NSPanel {
         NSScreen.preferred.repositionPanel(self)
     }
 
+    func handleShelfArrowKey(_ direction: Direction) {
+        applicationsShelfView.handleArrowKey(direction)
+    }
+
     override func orderOut(_ sender: Any?) {
         if Preferences.fadeOutAnimation {
             NSAnimationContext.runAnimationGroup(
