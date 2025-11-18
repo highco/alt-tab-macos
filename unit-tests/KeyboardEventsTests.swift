@@ -6,14 +6,14 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         ModifierFlags.current = []
         handleKeyboardEvent(nil, nil, nil, [], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "holdShortcut"])
     }
 
     // alt-down > tab-down > alt-up > tab-up
@@ -21,14 +21,14 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         ModifierFlags.current = []
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "holdShortcut"])
         handleKeyboardEvent(nil, nil, nil, [], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "holdShortcut"])
     }
 
     // alt-down > tab-down > alt-up > tab-up
@@ -36,14 +36,14 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         ModifierFlags.current = []
         handleKeyboardEvent(nil, nil, nil, [], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "holdShortcut"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "holdShortcut"])
     }
 
     // alt-down > alt-up > nextWindowShortcut-down
@@ -53,12 +53,12 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         ModifierFlags.current = []
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "holdShortcut"])
     }
 
     // alt-down > alt-up > nextWindowShortcut-down
@@ -68,11 +68,11 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
     }
 
     // alt-down > alt-up > nextWindowShortcut-down > nextWindowShortcut-up
@@ -80,16 +80,16 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         ModifierFlags.current = []
         handleKeyboardEvent(nil, nil, nil, [], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         ModifierFlags.current = [.option]
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         ModifierFlags.current = []
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "holdShortcut"])
     }
 
     // alt-down > tab-down > tab-up > w-down > w-up > alt-up
@@ -97,18 +97,18 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         handleKeyboardEvent(nil, nil, keycodeMap["w"], [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "closeWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "closeWindowShortcut"])
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "closeWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "closeWindowShortcut"])
         ModifierFlags.current = []
         handleKeyboardEvent(nil, nil, nil, [], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "closeWindowShortcut", "holdShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "closeWindowShortcut", "holdShortcut"])
     }
 
     func testOnReleaseDoNothing() throws {
@@ -116,14 +116,14 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         Preferences.shortcutStyle[0] = .doNothingOnRelease
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         ModifierFlags.current = []
         handleKeyboardEvent(nil, nil, nil, [], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
     }
 
     // alt-down > tab-down > tab-up > `-down > `-up
@@ -131,18 +131,18 @@ final class KeyboardEventsUtilsTests: XCTestCase {
         resetState()
         ModifierFlags.current = [.option]
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, [])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .down, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         handleKeyboardEvent(KeyboardEventsTestable.globalShortcutsIds["nextWindowShortcut"], .up, nil, nil, false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut"])
         handleKeyboardEvent(nil, nil, keycodeMap["`"], [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "nextWindowShortcut2"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "nextWindowShortcut2"])
         handleKeyboardEvent(nil, nil, nil, [.option], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "nextWindowShortcut2"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "nextWindowShortcut2"])
         ModifierFlags.current = []
         handleKeyboardEvent(nil, nil, nil, [], false)
-        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["nextWindowShortcut", "nextWindowShortcut2", "holdShortcut2"])
+        XCTAssertEqual(ControlsTab.shortcutsActionsTriggered, ["holdShortcutDown", "nextWindowShortcut", "nextWindowShortcut2", "holdShortcut2"])
     }
 
     private func resetState() {

@@ -20,6 +20,7 @@ class ApplicationsShelfView: NSView {
     private var selectedIndex: Int?
 
     var onLaunchRequested: ((ApplicationsCatalogItem) -> Void)?
+    var onAppInteraction: (() -> Void)?
 
     var preferredHeight: CGFloat { ApplicationsShelfView.defaultHeight }
 
@@ -147,6 +148,7 @@ class ApplicationsShelfView: NSView {
     }
 
     private func select(index: Int?) {
+        let previous = selectedIndex
         selectedIndex = index
         for (idx, button) in buttons.enumerated() {
             if let index = index {
@@ -154,6 +156,9 @@ class ApplicationsShelfView: NSView {
             } else {
                 button.isSelected = false
             }
+        }
+        if previous != index && index != nil {
+            notifyAppModeInteraction()
         }
     }
 
@@ -174,9 +179,17 @@ class ApplicationsShelfView: NSView {
         select(index: index)
         onLaunchRequested?(sender.item)
     }
+
+    private func notifyAppModeInteraction() {
+        onAppInteraction?()
+    }
 }
 
 extension ApplicationsShelfView: NSSearchFieldDelegate {
+    func controlTextDidBeginEditing(_ obj: Notification) {
+        notifyAppModeInteraction()
+    }
+
     func controlTextDidChange(_ obj: Notification) {
         applyFilter(searchField.stringValue)
     }

@@ -170,6 +170,24 @@ class App: AppCenterApplication {
         }
     }
 
+    func handleHoldShortcutDown(_ shortcutIndex: Int) {
+        showUiOrCycleSelection(shortcutIndex, false)
+    }
+
+    func handleHoldShortcutRelease(_ shortcutIndex: Int) {
+        guard appIsBeingUsed,
+              shortcutIndex == self.shortcutIndex,
+              !thumbnailsPanel.isInAppMode else { return }
+        focusTarget()
+    }
+
+    func handleNextWindowShortcut(_ shortcutIndex: Int) {
+        showUiOrCycleSelection(shortcutIndex, false)
+        if appIsBeingUsed {
+            thumbnailsPanel.enterWindowMode()
+        }
+    }
+
     func previousWindowShortcutWithRepeatingKey() {
         cycleSelection(.trailing)
         KeyRepeatTimer.toggleRepeatingKeyPreviousWindow()

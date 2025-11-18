@@ -6,13 +6,16 @@ class ControlsTab {
     static var shortcuts = [String: ATShortcut]()
     static var shortcutControls = [String: (CustomRecorderControl, String)]()
     static var shortcutsActions = [
-        "holdShortcut": { App.app.focusTarget() },
-        "holdShortcut2": { App.app.focusTarget() },
-        "holdShortcut3": { App.app.focusTarget() },
+        "holdShortcut": { App.app.handleHoldShortcutRelease(0) },
+        "holdShortcut2": { App.app.handleHoldShortcutRelease(1) },
+        "holdShortcut3": { App.app.handleHoldShortcutRelease(2) },
+        "holdShortcutDown": { App.app.handleHoldShortcutDown(0) },
+        "holdShortcutDown2": { App.app.handleHoldShortcutDown(1) },
+        "holdShortcutDown3": { App.app.handleHoldShortcutDown(2) },
         "focusWindowShortcut": { App.app.focusTarget() },
-        "nextWindowShortcut": { App.app.showUiOrCycleSelection(0, false) },
-        "nextWindowShortcut2": { App.app.showUiOrCycleSelection(1, false) },
-        "nextWindowShortcut3": { App.app.showUiOrCycleSelection(2, false) },
+        "nextWindowShortcut": { App.app.handleNextWindowShortcut(0) },
+        "nextWindowShortcut2": { App.app.handleNextWindowShortcut(1) },
+        "nextWindowShortcut3": { App.app.handleNextWindowShortcut(2) },
         "previousWindowShortcut": { App.app.previousWindowShortcutWithRepeatingKey() },
         "→": { App.app.thumbnailsPanel.handleShelfArrowKey(.right) },
         "←": { App.app.thumbnailsPanel.handleShelfArrowKey(.left) },
@@ -178,7 +181,7 @@ class ControlsTab {
         let controlId = sender.identifier!.rawValue
         if controlId.hasPrefix("holdShortcut") {
             let i = Preferences.nameToIndex(controlId)
-            addShortcut(.up, .global, Shortcut(keyEquivalent: Preferences.holdShortcut[i])!, controlId, i)
+            registerHoldShortcuts(controlId, i)
             if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
                 nextWindowShortcut.restrictModifiers([(sender as! CustomRecorderControl).objectValue!.modifierFlags])
                 shortcutChangedCallback(nextWindowShortcut)
@@ -203,6 +206,16 @@ class ControlsTab {
             if let holdShortcut = shortcutControls[Preferences.indexToName("holdShortcut", i)]?.0 {
                 holdShortcut.restrictModifiers(modifiers)
             }
+        }
+    }
+
+    private static func registerHoldShortcuts(_ controlId: String, _ index: Int) {
+        let downId = "\(controlId)Down"
+        removeShortcutIfExists(controlId)
+        removeShortcutIfExists(downId)
+        if let shortcut = Shortcut(keyEquivalent: Preferences.holdShortcut[index]) {
+            addShortcut(.down, .global, shortcut, downId, index)
+            addShortcut(.up, .global, shortcut, controlId, index)
         }
     }
 

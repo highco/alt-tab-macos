@@ -1,5 +1,10 @@
 import Cocoa
 
+enum MainWindowMode {
+    case app
+    case window
+}
+
 class ThumbnailsPanel: NSPanel {
     private static let shelfSpacing: CGFloat = 12
 
@@ -7,6 +12,7 @@ class ThumbnailsPanel: NSPanel {
     private let applicationsShelfView = ApplicationsShelfView()
     private let panelBackgroundView: EffectView = makeAppropriateEffectView()
     private var catalogObserver: NSObjectProtocol?
+    private(set) var mode: MainWindowMode = .app
 
     override var canBecomeKey: Bool { true }
 
@@ -23,6 +29,9 @@ class ThumbnailsPanel: NSPanel {
         panelBackgroundView.addSubview(applicationsShelfView)
         applicationsShelfView.onLaunchRequested = { [weak self] item in
             self?.launchApplication(item)
+        }
+        applicationsShelfView.onAppInteraction = { [weak self] in
+            self?.enterAppMode()
         }
         // triggering AltTab before or during Space transition animation brings the window on the Space post-transition
         collectionBehavior = .canJoinAllSpaces
@@ -60,6 +69,26 @@ class ThumbnailsPanel: NSPanel {
         NSScreen.preferred.repositionPanel(self)
     }
 
+    func setMode(_ newMode: MainWindowMode) {
+        guard mode != newMode else { return }
+        mode = newMode
+        if mode == .app {
+            DispatchQueue.main.async { [weak self] in
+                self?.applicationsShelfView.focusSearchField()
+            }
+        }
+    }
+
+    func enterAppMode() {
+        setMode(.app)
+    }
+
+    func enterWindowMode() {
+        setMode(.window)
+    }
+
+    var isInAppMode: Bool { mode == .app }
+
     func handleShelfArrowKey(_ direction: Direction) {
         applicationsShelfView.handleArrowKey(direction)
     }
@@ -78,6 +107,7 @@ class ThumbnailsPanel: NSPanel {
     func show() {
         updateAppearance()
         refreshApplicationsShelf(resetSearch: true)
+        enterAppMode()
         alphaValue = 1
         makeKeyAndOrderFront(nil)
         MouseEvents.toggle(true)

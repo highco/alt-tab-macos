@@ -14,6 +14,9 @@ class ControlsTab {
         "holdShortcut": ATShortcut(Shortcut(keyEquivalent: "⌥")!, "holdShortcut", .global, .up, 0),
         "holdShortcut2": ATShortcut(Shortcut(keyEquivalent: "⌥")!, "holdShortcut2", .global, .up, 1),
         "holdShortcut3": ATShortcut(Shortcut(keyEquivalent: "⌥")!, "holdShortcut3", .global, .up, 2),
+        "holdShortcutDown": ATShortcut(Shortcut(keyEquivalent: "⌥")!, "holdShortcutDown", .global, .down, 0),
+        "holdShortcut2Down": ATShortcut(Shortcut(keyEquivalent: "⌥")!, "holdShortcut2Down", .global, .down, 1),
+        "holdShortcut3Down": ATShortcut(Shortcut(keyEquivalent: "⌥")!, "holdShortcut3Down", .global, .down, 2),
         "nextWindowShortcut": ATShortcut(Shortcut(keyEquivalent: "⇥")!, "nextWindowShortcut", .global, .down),
         "nextWindowShortcut2": ATShortcut(Shortcut(keyEquivalent: "`")!, "nextWindowShortcut2", .global, .down),
         "→": ATShortcut(Shortcut(keyEquivalent: "→")!, "→", .local, .down),
@@ -37,10 +40,13 @@ class ControlsTab {
 
     static func executeAction(_ action: String) {
         shortcutsActionsTriggered.append(action)
-        if action.starts(with: "holdShortcut") {
+        if action.starts(with: "holdShortcutDown") {
+            App.app.appIsBeingUsed = true
+            let baseAction = action.replacingOccurrences(of: "Down", with: "")
+            App.app.shortcutIndex = Preferences.nameToIndex(baseAction)
+        } else if action.starts(with: "holdShortcut") {
             App.app.appIsBeingUsed = false
-        }
-        if action.starts(with: "nextWindowShortcut") {
+        } else if action.starts(with: "nextWindowShortcut") {
             App.app.appIsBeingUsed = true
             App.app.shortcutIndex = Preferences.nameToIndex(action)
         }
