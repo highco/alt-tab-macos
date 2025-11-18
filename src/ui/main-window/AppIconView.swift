@@ -10,7 +10,7 @@ class AppIconView: NSView {
     
     static let iconSize: CGFloat = 64
     static let cellWidth: CGFloat = 100
-    static let cellHeight: CGFloat = 90
+    static let cellHeight: CGFloat = 100 // Increased to prevent label cutoff
     
     init() {
         super.init(frame: .zero)
@@ -24,11 +24,12 @@ class AppIconView: NSView {
     
     private func setup() {
         wantsLayer = true
-        layer?.cornerRadius = Appearance.cellCornerRadius
+        layer?.cornerRadius = 14 // More rounded corners for modern look
         
         // Setup icon view
         iconView.imageScaling = .scaleProportionallyDown
         iconView.translatesAutoresizingMaskIntoConstraints = false
+        iconView.wantsLayer = true
         addSubview(iconView)
         
         // Setup label
@@ -36,24 +37,24 @@ class AppIconView: NSView {
         label.isBordered = false
         label.backgroundColor = .clear
         label.textColor = Appearance.fontColor
-        label.font = NSFont.systemFont(ofSize: 11)
+        label.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         label.alignment = .center
         label.lineBreakMode = .byTruncatingTail
         label.maximumNumberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
         
-        // Layout constraints
+        // Layout constraints with better spacing
         NSLayoutConstraint.activate([
             iconView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            iconView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            iconView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
             iconView.widthAnchor.constraint(equalToConstant: AppIconView.iconSize),
             iconView.heightAnchor.constraint(equalToConstant: AppIconView.iconSize),
             
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
-            label.topAnchor.constraint(equalTo: iconView.bottomAnchor, constant: 2),
-            label.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -4)
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
+            label.topAnchor.constraint(equalTo: iconView.bottomAnchor, constant: 4),
+            label.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -6)
         ])
         
         // Enable mouse tracking
@@ -75,18 +76,37 @@ class AppIconView: NSView {
     }
     
     func drawHighlight() {
+        // Animate the highlight changes for smooth transitions
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.15)
+        
         if isFocused {
             layer?.backgroundColor = Appearance.highlightFocusedBackgroundColor.cgColor
             layer?.borderColor = Appearance.highlightFocusedBorderColor.cgColor
-            layer?.borderWidth = Appearance.highlightBorderWidth
+            layer?.borderWidth = 2.5
+            
+            // Add subtle shadow when focused
+            layer?.shadowColor = Appearance.highlightFocusedBorderColor.cgColor
+            layer?.shadowOpacity = 0.3
+            layer?.shadowOffset = NSSize(width: 0, height: 0)
+            layer?.shadowRadius = 6
         } else if isHovered {
             layer?.backgroundColor = Appearance.highlightHoveredBackgroundColor.cgColor
             layer?.borderColor = Appearance.highlightHoveredBorderColor.cgColor
-            layer?.borderWidth = Appearance.highlightBorderWidth
+            layer?.borderWidth = 2
+            
+            // Lighter shadow when hovered
+            layer?.shadowColor = Appearance.highlightHoveredBorderColor.cgColor
+            layer?.shadowOpacity = 0.2
+            layer?.shadowOffset = NSSize(width: 0, height: 0)
+            layer?.shadowRadius = 4
         } else {
             layer?.backgroundColor = .clear
             layer?.borderWidth = 0
+            layer?.shadowOpacity = 0
         }
+        
+        CATransaction.commit()
     }
     
     override func mouseEntered(with event: NSEvent) {

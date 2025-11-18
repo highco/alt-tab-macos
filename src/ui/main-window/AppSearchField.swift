@@ -14,18 +14,24 @@ class AppSearchField: NSTextField {
     }
     
     private func setup() {
-        placeholderString = "Search applications..."
+        placeholderString = "  Search applications..."  // Add space for left padding
         isBordered = false
-        backgroundColor = NSColor.textBackgroundColor.withAlphaComponent(0.1)
+        backgroundColor = NSColor.textBackgroundColor.withAlphaComponent(0.15)
         textColor = Appearance.fontColor
-        font = Appearance.font
+        font = NSFont.systemFont(ofSize: 14, weight: .medium)
         focusRingType = .none
         drawsBackground = true
         wantsLayer = true
-        layer?.cornerRadius = 8
+        layer?.cornerRadius = 12 // More rounded for modern look
         delegate = self
         
-        // Make it behave like a search field
+        // Add subtle shadow for depth
+        layer?.shadowColor = NSColor.black.cgColor
+        layer?.shadowOpacity = 0.1
+        layer?.shadowOffset = NSSize(width: 0, height: -1)
+        layer?.shadowRadius = 3
+        
+        // Configure cell for single-line behavior
         if let cell = cell as? NSTextFieldCell {
             cell.usesSingleLineMode = true
             cell.wraps = false

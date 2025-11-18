@@ -14,8 +14,8 @@ class ThumbnailsView {
     var filteredApps: [InstalledApp] = []
     var focusedAppIndex: Int? = nil
     var isInAppsSection = false
-    let appsSectionHeight: CGFloat = 150 // search field + app icons row
-    let searchFieldHeight: CGFloat = 30
+    let appsSectionHeight: CGFloat = 190 // search field + app icons row with better spacing
+    let searchFieldHeight: CGFloat = 36
 
     init() {
         contentView = makeAppropriateEffectView()
@@ -43,7 +43,7 @@ class ThumbnailsView {
         if isInAppsSection {
             focusedAppIndex = filteredApps.isEmpty ? nil : 0
         }
-        updateAppIconsLayout()
+        updateAppIconsLayoutWithPositions()
     }
 
     func updateBackgroundView() {
@@ -208,23 +208,16 @@ class ThumbnailsView {
     }
     
     private func layoutAppsSection(_ widthMax: CGFloat) {
-        // Position search field at top
-        let searchFieldWidth = widthMax
-        appSearchField.frame = NSRect(
-            x: Appearance.windowPadding,
-            y: Appearance.windowPadding,
-            width: searchFieldWidth,
-            height: searchFieldHeight
-        )
-        
-        // Position app icons below search field
+        // We'll position these from the top of the contentView after we know the full height
+        // For now, just update the app icons layout - positioning will happen in layoutParentViews
         updateAppIconsLayout()
     }
     
     private func updateAppIconsLayout() {
-        let startY = Appearance.windowPadding + searchFieldHeight + 10
-        let spacing: CGFloat = 10
-        var currentX = Appearance.windowPadding + spacing
+        // Y position will be set later in layoutParentViews after we know the full height
+        let spacing: CGFloat = 14 // Increased spacing between icons
+        let horizontalPadding = Appearance.windowPadding + 8
+        var currentX = horizontalPadding + spacing
         
         // Remove old app icon views from superview
         appIconViews.forEach { $0.removeFromSuperview() }
@@ -235,7 +228,43 @@ class ThumbnailsView {
             let appView = appIconViews[i]
             appView.frame = NSRect(
                 x: currentX,
-                y: startY,
+                y: 0, // Temporary, will be set in layoutParentViews
+                width: AppIconView.cellWidth,
+                height: AppIconView.cellHeight
+            )
+            appView.updateWithApp(filteredApps[i])
+            appView.launchCallback = { [weak self] app in
+                self?.launchApp(app)
+            }
+            contentView.addSubview(appView)
+            currentX += AppIconView.cellWidth + spacing
+        }
+        
+        // Update highlight for focused app
+        updateAppIconHighlights()
+    }
+    
+    private func updateAppIconsLayoutWithPositions() {
+        // This version properly positions icons when called during filtering
+        let spacing: CGFloat = 14
+        let horizontalPadding = Appearance.windowPadding + 8
+        var currentX = horizontalPadding + spacing
+        
+        // Calculate Y position from current contentView height
+        let frameHeight = contentView.frame.height
+        let appsStartY = frameHeight - Appearance.windowPadding - appsSectionHeight + 8
+        let iconsY = appsStartY + 10
+        
+        // Remove old app icon views from superview
+        appIconViews.forEach { $0.removeFromSuperview() }
+        
+        // Show up to 10 apps
+        let appsToShow = min(filteredApps.count, 10)
+        for i in 0..<appsToShow {
+            let appView = appIconViews[i]
+            appView.frame = NSRect(
+                x: currentX,
+                y: iconsY,
                 width: AppIconView.cellWidth,
                 height: AppIconView.cellHeight
             )
@@ -267,12 +296,13 @@ class ThumbnailsView {
         let labelHeight = ThumbnailsView.recycledViews.first!.label.fittingSize.height
         let height = ThumbnailView.height(labelHeight)
         let isLeftToRight = App.shared.userInterfaceLayoutDirection == .leftToRight
-        let startingX = isLeftToRight ? Appearance.interCellPadding : widthMax - Appearance.interCellPadding
+        let thumbnailPadding = Appearance.interCellPadding + 4 // Slightly more padding for thumbnails
+        let startingX = isLeftToRight ? thumbnailPadding : widthMax - thumbnailPadding
         var currentX = startingX
-        // Offset Y to account for apps section
-        var currentY = Appearance.interCellPadding + appsSectionHeight
+        // Start thumbnails from the bottom
+        var currentY = thumbnailPadding
         var maxX = CGFloat(0)
-        var maxY = currentY + height + Appearance.interCellPadding
+        var maxY = currentY + height + thumbnailPadding
         var newViews = [ThumbnailView]()
         rows.removeAll(keepingCapacity: true)
         rows.append([ThumbnailView]())
@@ -282,13 +312,14 @@ class ThumbnailsView {
             let view = ThumbnailsView.recycledViews[index]
             view.updateRecycledCellWithNewContent(window, index, height)
             let width = view.frame.size.width
-            let projectedX = projectedWidth(currentX, width).rounded(.down)
+            let thumbnailPadding = Appearance.interCellPadding + 4
+            let projectedX = projectedWidth(currentX, width, thumbnailPadding).rounded(.down)
             if needNewLine(projectedX, widthMax) {
                 currentX = startingX
-                currentY = (currentY + height + Appearance.interCellPadding).rounded(.down)
+                currentY = (currentY + height + thumbnailPadding).rounded(.down)
                 view.frame.origin = CGPoint(x: localizedCurrentX(currentX, width), y: currentY)
-                currentX = projectedWidth(currentX, width).rounded(.down)
-                maxY = max(currentY + height + Appearance.interCellPadding, maxY)
+                currentX = projectedWidth(currentX, width, thumbnailPadding).rounded(.down)
+                maxY = max(currentY + height + thumbnailPadding, maxY)
                 rows.append([ThumbnailView]())
             } else {
                 view.frame.origin = CGPoint(x: localizedCurrentX(currentX, width), y: currentY)
@@ -310,11 +341,12 @@ class ThumbnailsView {
         return projectedX < 0
     }
 
-    private func projectedWidth(_ currentX: CGFloat, _ width: CGFloat) -> CGFloat {
+    private func projectedWidth(_ currentX: CGFloat, _ width: CGFloat, _ padding: CGFloat = 0) -> CGFloat {
+        let usedPadding = padding > 0 ? padding : Appearance.interCellPadding
         if App.shared.userInterfaceLayoutDirection == .leftToRight {
-            return currentX + width + Appearance.interCellPadding
+            return currentX + width + usedPadding
         }
-        return currentX - width - Appearance.interCellPadding
+        return currentX - width - usedPadding
     }
 
     private func localizedCurrentX(_ currentX: CGFloat, _ width: CGFloat) -> CGFloat {
@@ -326,14 +358,13 @@ class ThumbnailsView {
         ThumbnailsView.thumbnailsWidth = min(maxX, widthMax)
         ThumbnailsView.thumbnailsHeight = min(maxY, heightMax)
         let frameWidth = ThumbnailsView.thumbnailsWidth + Appearance.windowPadding * 2
-        var frameHeight = ThumbnailsView.thumbnailsHeight + Appearance.windowPadding * 2
+        var frameHeight = ThumbnailsView.thumbnailsHeight + Appearance.windowPadding * 2 + appsSectionHeight
         let originX = Appearance.windowPadding
-        // Position scroll view below apps section
-        var originY = Appearance.windowPadding + appsSectionHeight
+        // Position scroll view at the bottom (for thumbnails)
+        let originY = Appearance.windowPadding
         if Preferences.appearanceStyle == .appIcons {
             // If there is title under the icon on the last line, the height of the title needs to be subtracted.
             frameHeight = frameHeight - Appearance.intraCellPadding - labelHeight
-            originY = originY - Appearance.intraCellPadding - labelHeight
         }
         contentView.frame.size = NSSize(width: frameWidth, height: frameHeight)
         scrollView.frame.size = NSSize(width: min(maxX, widthMax), height: min(maxY, heightMax))
@@ -349,6 +380,25 @@ class ThumbnailsView {
         }
         scrollView.addTrackingArea(NSTrackingArea(rect: scrollView.bounds,
             options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: scrollView, userInfo: nil))
+        
+        // Now position the apps section at the TOP (highest Y value)
+        let horizontalPadding = Appearance.windowPadding + 8
+        let searchFieldWidth = widthMax - 16
+        let appsStartY = frameHeight - Appearance.windowPadding - appsSectionHeight + 8
+        
+        // Position search field at the top
+        appSearchField.frame = NSRect(
+            x: horizontalPadding,
+            y: appsStartY + appsSectionHeight - searchFieldHeight - 8,
+            width: searchFieldWidth,
+            height: searchFieldHeight
+        )
+        
+        // Position app icon views below search field
+        let iconsY = appsStartY + 10
+        for appView in appIconViews where appView.superview != nil {
+            appView.frame.origin.y = iconsY
+        }
     }
 
     func centerRows(_ maxX: CGFloat) {

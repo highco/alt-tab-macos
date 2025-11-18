@@ -16,9 +16,9 @@ class Appearance {
 
     // size: constants
     static let maxHeightOnScreen = CGFloat(0.8)
-    static let interCellPadding = CGFloat(1)
-    static let intraCellPadding = CGFloat(5)
-    static let appIconLabelSpacing = CGFloat(2)
+    static let interCellPadding = CGFloat(4) // Increased from 1 for better spacing
+    static let intraCellPadding = CGFloat(8) // Increased from 5 for better spacing
+    static let appIconLabelSpacing = CGFloat(4) // Increased from 2 for better spacing
 
     // theme
     static var fontColor = NSColor.red
@@ -83,12 +83,12 @@ class Appearance {
 
     private static func thumbnailsSize(_ isHorizontalScreen: Bool) {
         hideThumbnails = false
-        windowPadding = 18
-        windowCornerRadius = 23
-        cellCornerRadius = 10
+        windowPadding = 24 // Increased from 18 for better spacing
+        windowCornerRadius = 26
+        cellCornerRadius = 12
         edgeInsetsSize = 12
         if #available(macOS 26.0, *) {
-            windowPadding = 28
+            windowPadding = 32 // Increased from 28 for better spacing
             windowCornerRadius = 43
             cellCornerRadius = 18
         }
