@@ -1,6 +1,15 @@
 # Project Overview
 An macOS app written in Swift to switch between open application and open new application with the Alt+Tab keyboard shortcut.
 
+# MOST IMPORTANT
+Do not over-engineer.
+Write the the most efficient code!
+Write the simplest possible code!
+After writing code, always build and fix all error!
+
+# Run this command to build
+codebuild -workspace alt-tab-macos.xcworkspace -scheme Debug -configuration Debug -derivedDataPath ./build
+
 ## Building the project locally
 * `scripts/codesign/setup_local.sh` to generate a local self-signed certificate, to avoid having to re-check the `System Preferences > Security & Privacy` permissions on every build
 * Either open `alt-tab-macos.xcworkspace` with XCode, or use the cli: `xcodebuild -workspace alt-tab-macos.xcworkspace -scheme Debug` to build the .app with the `Debug` build configuration
