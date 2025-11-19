@@ -59,8 +59,9 @@ class App: AppCenterApplication {
     private func handleKeyEvent(_ event: NSEvent) {
         print("### key event captured:", event.modifierFlags)
         
-        let optionPressed = event.modifierFlags.contains(.option)
-        print("### option key event:", event.modifierFlags, "optionPressed:", optionPressed, "wasPressed:", isOptionKeyPressed)
+        // Only detect LEFT option key (key code 58); ignore RIGHT option key (key code 61)
+        let optionPressed = event.modifierFlags.contains(.option) && event.keyCode == 58
+        print("### option key event:", event.modifierFlags, "optionPressed:", optionPressed, "wasPressed:", isOptionKeyPressed, "keyCode:", event.keyCode)
 
         if optionPressed {
             // Option key was just pressed
