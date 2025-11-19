@@ -263,24 +263,47 @@ class ScrollView: NSScrollView {
     override func mouseMoved(with event: NSEvent) {
         // disable mouse hover during scrolling as it creates jank during elastic bounces at the start/end of the scrollview
         if isCurrentlyScrolling { return }
-        if let hit = hitTest(App.app.thumbnailsPanel.mouseLocationOutsideOfEventStream) {
-            var target: NSView? = hit
-            while !(target is ThumbnailView) && target != nil {
-                target = target!.superview
+        let mouseLocation = App.app.thumbnailsPanel.mouseLocationOutsideOfEventStream
+        var target: ThumbnailView?
+        
+        // First try the standard hitTest approach
+        if let hit = hitTest(mouseLocation) {
+            var view: NSView? = hit
+            while !(view is ThumbnailView) && view != nil {
+                view = view!.superview
             }
-            if let target = target as? ThumbnailView {
-                if previousTarget != target {
-                    previousTarget?.showOrHideWindowControls(false)
-                    previousTarget = target
+            target = view as? ThumbnailView
+        }
+        
+        // If hitTest didn't find a ThumbnailView, manually check if mouse is over any thumbnail
+        // This handles cases where the label extends beyond the ThumbnailView bounds
+        if target == nil {
+            for thumbnail in ThumbnailsView.recycledViews {
+                let locationInThumbnail = thumbnail.convert(mouseLocation, from: nil)
+                // Check if mouse is within thumbnail bounds or its label bounds
+                if thumbnail.bounds.contains(locationInThumbnail) {
+                    target = thumbnail
+                    break
                 }
-                target.mouseMoved()
-            } else {
-                if !checkIfWithinInterPadding() {
-                    resetHoveredWindow()
+                // Check if mouse is over the label (which may extend beyond thumbnail bounds)
+                let locationInLabel = thumbnail.label.convert(mouseLocation, from: nil)
+                if thumbnail.label.bounds.contains(locationInLabel) && !thumbnail.label.isHidden {
+                    target = thumbnail
+                    break
                 }
             }
+        }
+        
+        if let target = target {
+            if previousTarget != target {
+                previousTarget?.showOrHideWindowControls(false)
+                previousTarget = target
+            }
+            target.mouseMoved()
         } else {
-            resetHoveredWindow()
+            if !checkIfWithinInterPadding() {
+                resetHoveredWindow()
+            }
         }
     }
 
