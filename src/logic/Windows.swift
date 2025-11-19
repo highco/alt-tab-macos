@@ -90,23 +90,24 @@ class Windows {
     }
 
     static func setInitialFocusedAndHoveredWindowIndex() {
-        let oldIndex = focusedWindowIndex
-        focusedWindowIndex = 0
-        ThumbnailsView.highlight(oldIndex)
-        if let oldIndex = hoveredWindowIndex {
-            hoveredWindowIndex = nil
-            ThumbnailsView.highlight(oldIndex)
-        }
-        if let app = Applications.find(NSWorkspace.shared.frontmostApplication?.processIdentifier),
-           (app.focusedWindow == nil || Preferences.windowOrder[App.app.shortcutIndex] != .recentlyFocused),
-           let lastFocusedWindowIndex = getLastFocusedWindowIndex() {
-            updateFocusedAndHoveredWindowIndex(lastFocusedWindowIndex)
-        } else {
-            cycleFocusedWindowIndex(1)
-            if focusedWindowIndex == 0 {
-                updateFocusedAndHoveredWindowIndex(0)
-            }
-        }
+        cycleFocusedWindowIndex(0)
+//        let oldIndex = focusedWindowIndex
+//        focusedWindowIndex = 0
+//        ThumbnailsView.highlight(oldIndex)
+//        if let oldIndex = hoveredWindowIndex {
+//            hoveredWindowIndex = nil
+//            ThumbnailsView.highlight(oldIndex)
+//        }
+//        if let app = Applications.find(NSWorkspace.shared.frontmostApplication?.processIdentifier),
+//           (app.focusedWindow == nil || Preferences.windowOrder[App.app.shortcutIndex] != .recentlyFocused),
+//           let lastFocusedWindowIndex = getLastFocusedWindowIndex() {
+//            updateFocusedAndHoveredWindowIndex(lastFocusedWindowIndex)
+//        } else {
+//            cycleFocusedWindowIndex(1)
+//            if focusedWindowIndex == 0 {
+//                updateFocusedAndHoveredWindowIndex(0)
+//            }
+//        }
     }
 
     static func getLastFocusedWindowIndex() -> Int? {
