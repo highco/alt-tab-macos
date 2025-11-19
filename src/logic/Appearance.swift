@@ -14,6 +14,10 @@ class Appearance {
     static var windowMinWidthInRow = CGFloat(1000)
     static var windowMaxWidthInRow = CGFloat(1000)
 
+    // application shelf
+    static var applicationShelfItemPadding = CGFloat(12)
+    
+
     // size: constants
     static let maxHeightOnScreen = CGFloat(0.8)
     static let interCellPadding = CGFloat(1)
@@ -102,7 +106,7 @@ class Appearance {
                 iconSize = 26
                 fontHeight = 14
             case .large:
-                rowsCount = isHorizontalScreen ? 3 : 6
+                rowsCount = isHorizontalScreen ? 2 : 6
                 iconSize = 28
                 fontHeight = 16
         }
