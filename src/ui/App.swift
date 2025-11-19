@@ -71,8 +71,8 @@ class App: AppCenterApplication {
         } else if !optionPressed && isOptionKeyPressed {
             // Option key was just released
             isOptionKeyPressed = false
-            if appIsBeingUsed {
-                hideUi()
+            if appIsBeingUsed && thumbnailsPanel.userHasSelectedAWindow {
+                focusSelectedWindow(Windows.focusedWindow())
             }
         }
     }
