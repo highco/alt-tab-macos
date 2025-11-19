@@ -31,12 +31,52 @@ class App: AppCenterApplication {
     private var appCenterDelegate: AppCenterCrash?
     // don't queue multiple delayed rebuildUi() calls
     private var delayedDisplayScheduled = 0
+    // event monitors for option key
+    private var optionKeyGlobalMonitor: Any?
+    private var optionKeyLocalMonitor: Any?
+    private var isOptionKeyPressed = false
 
     override init() {
         super.init()
         delegate = self
         App.app = self
+        registerGlobalShortcuts()
     }
+
+    func registerGlobalShortcuts() {
+        // Monitor events sent to other applications
+        optionKeyGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.handleKeyEvent(event)
+        }
+        
+        // Monitor events sent to our own application
+        optionKeyLocalMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.handleKeyEvent(event)
+            return event
+        }
+    }
+    
+    private func handleKeyEvent(_ event: NSEvent) {
+        print("### key event captured:", event.modifierFlags)
+        
+        let optionPressed = event.modifierFlags.contains(.option)
+        print("### option key event:", event.modifierFlags, "optionPressed:", optionPressed, "wasPressed:", isOptionKeyPressed)
+
+        if optionPressed {
+            // Option key was just pressed
+            isOptionKeyPressed = true
+            if !appIsBeingUsed {
+                showUi()
+            }
+        } else if !optionPressed && isOptionKeyPressed {
+            // Option key was just released
+            isOptionKeyPressed = false
+            if appIsBeingUsed {
+                hideUi()
+            }
+        }
+    }
+
 
     required init?(coder: NSCoder) {
         fatalError("Class only supports programmatic initialization")
@@ -56,7 +96,7 @@ class App: AppCenterApplication {
     }
 
     func hideUi(_ keepPreview: Bool = false) {
-        Logger.info(appIsBeingUsed)
+        print("### hideUi \(appIsBeingUsed)")
         guard appIsBeingUsed else { return } // already hidden
         appIsBeingUsed = false
         isFirstSummon = true
@@ -207,6 +247,8 @@ class App: AppCenterApplication {
     }
 
     @objc func showUi() {
+        print("### showUi")
+        appIsBeingUsed = true
         MainMenu.toggle(enabled: false)
         NSScreen.updatePreferred()
         Applications.manuallyRefreshAllWindows()
@@ -310,6 +352,13 @@ extension App: NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         // symbolic hotkeys state persist after the app is quit; we restore this shortcut before quitting
         setNativeCommandTabEnabled(true)
+        // Remove option key monitors
+        if let monitor = optionKeyGlobalMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
+        if let monitor = optionKeyLocalMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
     }
 }
 
