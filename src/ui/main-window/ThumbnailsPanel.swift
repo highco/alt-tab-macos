@@ -5,7 +5,7 @@ class ThumbnailsPanel: NSPanel {
     var thumbnailsView = ThumbnailsView()
     private let applicationsShelfView = ApplicationsShelfView()
     private let infoBar = InfoBar()
-    private let panelBackgroundView: EffectView = makeAppropriateEffectView()
+    private let panelBackgroundView: EffectView = makeLiquidGlassEffectView()
     private var catalogObserver: NSObjectProtocol?
     
     var userHasSelectedAWindow: Bool = false

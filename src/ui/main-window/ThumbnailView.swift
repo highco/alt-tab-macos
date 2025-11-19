@@ -225,18 +225,9 @@ class ThumbnailView: FlippedView {
         }
     }
 
-    private func getBackgroundColor(isFocused: Bool, isHovered: Bool) -> NSColor {
-        if isFocused {
-            return Appearance.highlightFocusedBackgroundColor
-        }
-        if isHovered {
-            return Appearance.highlightHoveredBackgroundColor
-        }
-        return NSColor.clear
-    }
-
     private func setBackground(isFocused: Bool, isHovered: Bool) {
-        vStackView.layer!.backgroundColor = getBackgroundColor(isFocused: isFocused, isHovered: isHovered).cgColor
+        // Keep background clear to show Liquid Glass effect through
+        vStackView.layer!.backgroundColor = NSColor.clear.cgColor
     }
 
     private func setBorder(isFocused: Bool, isHovered: Bool) {

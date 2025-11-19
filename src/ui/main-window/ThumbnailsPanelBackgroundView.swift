@@ -12,7 +12,7 @@ class LiquidGlassEffectView: NSGlassEffectView, EffectView {
         self.init()
         if clear {
             style = .clear
-            safeSetVariant(3)
+            safeSetVariant(1) // Lower value = less transparent (1 is less transparent than 3)
         } else {
             style = .regular
         }
@@ -73,6 +73,18 @@ protocol EffectView: NSView {
     func updateAppearance()
 }
 
+class TransparentView: NSView, EffectView {
+    convenience init() {
+        self.init(frame: .zero)
+        wantsLayer = true
+        layer!.backgroundColor = .clear
+    }
+    
+    func updateAppearance() {
+        // No-op: transparent view doesn't need appearance updates
+    }
+}
+
 func makeAppropriateEffectView() -> EffectView {
     if #available(macOS 26.0, *) {
         if Preferences.appearanceStyle == .appIcons {
@@ -88,5 +100,18 @@ func makeAppropriateEffectView() -> EffectView {
         return LiquidGlassEffectView(false)
     }
     Logger.debug("Using FrostedGlassEffectView(nil)")
+    return FrostedGlassEffectView(nil)
+}
+
+func makeLiquidGlassEffectView() -> EffectView {
+    if #available(macOS 26.0, *) {
+        if LiquidGlassEffectView.canUsePrivateLiquidGlassLook() {
+            Logger.debug("Using LiquidGlassEffectView(true) for ThumbnailsPanel")
+            return LiquidGlassEffectView(true)
+        }
+        Logger.debug("Using LiquidGlassEffectView(false) for ThumbnailsPanel (fallback)")
+        return LiquidGlassEffectView(false)
+    }
+    Logger.debug("Using FrostedGlassEffectView(nil) for ThumbnailsPanel (macOS < 26)")
     return FrostedGlassEffectView(nil)
 }

@@ -9,18 +9,10 @@ class ThumbnailsView {
     static var thumbnailsHeight = CGFloat(0.0)
 
     init() {
-        contentView = makeAppropriateEffectView()
+        contentView = TransparentView()
         contentView.addSubview(scrollView)
         // TODO: think about this optimization more
         (1...20).forEach { _ in ThumbnailsView.recycledViews.append(ThumbnailView()) }
-    }
-
-    func updateBackgroundView() {
-        let newEffectView = makeAppropriateEffectView()
-        scrollView.removeFromSuperview()
-        newEffectView.addSubview(scrollView)
-        contentView.superview?.replaceSubview(contentView, with: newEffectView)
-        contentView = newEffectView
     }
 
     func reset() {
@@ -28,7 +20,6 @@ class ThumbnailsView {
         // Maybe in some Appkit willDraw() function that triggers before drawing it
         NSScreen.updatePreferred()
         Appearance.update()
-        updateBackgroundView()
         for i in 0..<ThumbnailsView.recycledViews.count {
             ThumbnailsView.recycledViews[i] = ThumbnailView()
         }
