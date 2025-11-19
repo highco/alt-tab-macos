@@ -168,43 +168,36 @@ class ThumbnailsView {
         App.shared.userInterfaceLayoutDirection == .leftToRight ? currentX : currentX - width
     }
 
-    private func layoutParentViews(
-        _ maxX: CGFloat, _ widthMax: CGFloat, _ maxY: CGFloat, _ labelHeight: CGFloat
-    ) {
+    private func layoutParentViews(_ maxX: CGFloat, _ widthMax: CGFloat, _ maxY: CGFloat, _ labelHeight: CGFloat) {
         let heightMax = ThumbnailsPanel.maxThumbnailsHeight()
-        let minThumbnailsWidth =
-            NSScreen.preferred.frame.width / 2 - Appearance.windowPadding * 2 - Appearance
-            .panelPadding * 2
-        ThumbnailsView.thumbnailsWidth = max(min(maxX, widthMax), minThumbnailsWidth)
+        let minContentWidth = 900.0
+        // let minContentWidth = max(, NSScreen.preferred.frame.width * 0.6 - Appearance.windowPadding * 2)
+        let limitedWidth = min(maxX, widthMax)
+        ThumbnailsView.thumbnailsWidth = max(minContentWidth, limitedWidth)
         ThumbnailsView.thumbnailsHeight = min(maxY, heightMax)
         let frameWidth = ThumbnailsView.thumbnailsWidth + Appearance.windowPadding * 2
-        var frameHeight =
-            ThumbnailsView.thumbnailsHeight == 0
-            ? 0 : ThumbnailsView.thumbnailsHeight + Appearance.windowPadding * 2
-        let originX = (frameWidth - min(maxX, widthMax)) / 2
+        var frameHeight = ThumbnailsView.thumbnailsHeight + Appearance.windowPadding * 2
+        let originX = Appearance.windowPadding
         var originY = Appearance.windowPadding
-        if ThumbnailsView.thumbnailsHeight > 0 && Preferences.appearanceStyle == .appIcons {
+        if Preferences.appearanceStyle == .appIcons {
             // If there is title under the icon on the last line, the height of the title needs to be subtracted.
             frameHeight = frameHeight - Appearance.intraCellPadding - labelHeight
             originY = originY - Appearance.intraCellPadding - labelHeight
         }
         contentView.frame.size = NSSize(width: frameWidth, height: frameHeight)
-        scrollView.frame.size = NSSize(width: min(maxX, widthMax), height: min(maxY, heightMax))
+        scrollView.frame.size = NSSize(width: ThumbnailsView.thumbnailsWidth, height: min(maxY, heightMax))
         scrollView.frame.origin = CGPoint(x: originX, y: originY)
         scrollView.contentView.frame.size = scrollView.frame.size
         if App.shared.userInterfaceLayoutDirection == .rightToLeft {
-            let croppedWidth = widthMax - maxX
+            let croppedWidth = ThumbnailsView.thumbnailsWidth - maxX
             scrollView.documentView!.subviews.forEach { $0.frame.origin.x -= croppedWidth }
         }
         scrollView.documentView!.frame.size = NSSize(width: maxX, height: maxY)
         if let existingTrackingArea = scrollView.trackingAreas.first {
             scrollView.removeTrackingArea(existingTrackingArea)
         }
-        scrollView.addTrackingArea(
-            NSTrackingArea(
-                rect: scrollView.bounds,
-                options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: scrollView,
-                userInfo: nil))
+        scrollView.addTrackingArea(NSTrackingArea(rect: scrollView.bounds,
+            options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: scrollView, userInfo: nil))
     }
 
     func centerRows(_ maxX: CGFloat) {
