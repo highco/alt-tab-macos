@@ -118,8 +118,8 @@ class ApplicationsShelfView: NSView {
     private func configureScrollView() {
         scrollView.drawsBackground = false
         scrollView.hasVerticalScroller = false
-        scrollView.hasHorizontalScroller = true
-        scrollView.autohidesScrollers = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = false
         scrollView.usesPredominantAxisScrolling = true
         scrollView.borderType = .noBorder
         scrollView.documentView = contentView
