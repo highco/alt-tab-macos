@@ -1,7 +1,7 @@
 import Cocoa
 
 class ApplicationsShelfView: NSView {
-    static let defaultHeight: CGFloat = 152
+    static let defaultHeight: CGFloat = 164
 
     private let paddingHorizontal: CGFloat = 18
     private let paddingVertical: CGFloat = 12
@@ -158,14 +158,18 @@ class ApplicationsShelfView: NSView {
     }
 
     private func layoutButtons() {
-        let availableHeight = max(scrollView.bounds.height, buttonSize.height)
-        let verticalOffset = max((availableHeight - buttonSize.height) / 2, 0)
-        var currentX: CGFloat = 0
+        let buttonPadding = Appearance.applicationShelfItemPadding
+        let effectiveButtonHeight = buttonSize.height + buttonPadding * 2
+        let availableHeight = max(scrollView.bounds.height, effectiveButtonHeight)
+        // Position button with padding at bottom to ensure extended background is visible
+        let verticalOffset = buttonPadding
+        var currentX: CGFloat = buttonPadding
         for button in buttons {
             button.frame = NSRect(x: currentX, y: verticalOffset, width: buttonSize.width, height: buttonSize.height)
-            currentX += buttonSize.width + buttonSpacing
+            // Account for padding on both sides when spacing buttons
+            currentX += buttonSize.width + buttonSpacing + buttonPadding * 2
         }
-        let contentWidth = max(scrollView.bounds.width, currentX > 0 ? currentX - buttonSpacing : 0)
+        let contentWidth = max(scrollView.bounds.width, currentX > 0 ? currentX - buttonSpacing - buttonPadding * 2 + buttonPadding : 0)
         contentView.frame = NSRect(x: 0, y: 0, width: contentWidth, height: availableHeight)
     }
 
@@ -211,6 +215,8 @@ private class ApplicationShelfItemButton: NSButton {
     var isSelected = false {
         didSet { updateAppearance() }
     }
+    private let backgroundLayer = CALayer()
+    private let padding = Appearance.applicationShelfItemPadding
 
     init(item: ApplicationsCatalogItem) {
         self.item = item
@@ -225,13 +231,18 @@ private class ApplicationShelfItemButton: NSButton {
         title = item.name
         focusRingType = .none
         wantsLayer = true
-        layer?.cornerRadius = 8
-        layer?.masksToBounds = true
+        backgroundLayer.cornerRadius = 8
+        layer?.insertSublayer(backgroundLayer, at: 0)
         updateAppearance()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layout() {
+        super.layout()
+        backgroundLayer.frame = bounds.insetBy(dx: -padding, dy: -padding)
     }
 
     private func updateAppearance() {
@@ -242,9 +253,9 @@ private class ApplicationShelfItemButton: NSButton {
             } else {
                 highlightColor = .selectedControlColor
             }
-            layer?.backgroundColor = highlightColor.withAlphaComponent(0.35).cgColor
+            backgroundLayer.backgroundColor = highlightColor.withAlphaComponent(0.35).cgColor
         } else {
-            layer?.backgroundColor = NSColor.clear.cgColor
+            backgroundLayer.backgroundColor = NSColor.clear.cgColor
         }
     }
 }
