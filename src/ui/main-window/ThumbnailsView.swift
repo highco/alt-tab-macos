@@ -50,8 +50,9 @@ class ThumbnailsView {
                     return nil
                 }
             }
-            if ((step > 0 && nextRow < currentRow) || (step < 0 && nextRow > currentRow)) &&
-                   (ATShortcut.lastEventIsARepeat || KeyRepeatTimer.timer?.isValid ?? false) {
+            if ((step > 0 && nextRow < currentRow) || (step < 0 && nextRow > currentRow))
+                && (ATShortcut.lastEventIsARepeat || KeyRepeatTimer.timer?.isValid ?? false)
+            {
                 return nil
             }
             return rows[nextRow]
@@ -63,17 +64,26 @@ class ThumbnailsView {
         guard Windows.focusedWindowIndex < ThumbnailsView.recycledViews.count else { return }
         let focusedViewFrame = ThumbnailsView.recycledViews[Windows.focusedWindowIndex].frame
         let originCenter = NSMidX(focusedViewFrame)
-        guard let targetRow = nextRow(direction, allowWrap: allowWrap), !targetRow.isEmpty else { return }
+        guard let targetRow = nextRow(direction, allowWrap: allowWrap), !targetRow.isEmpty else {
+            return
+        }
         let leftSide = originCenter < NSMidX(contentView.frame)
-        let leadingSide = App.shared.userInterfaceLayoutDirection == .leftToRight ? leftSide : !leftSide
+        let leadingSide =
+            App.shared.userInterfaceLayoutDirection == .leftToRight ? leftSide : !leftSide
         let iterable = leadingSide ? targetRow : targetRow.reversed()
-        guard let targetView = iterable.first(where: {
-            if App.shared.userInterfaceLayoutDirection == .leftToRight {
-                return leadingSide ? NSMaxX($0.frame) > originCenter : NSMinX($0.frame) < originCenter
-            }
-            return leadingSide ? NSMinX($0.frame) < originCenter : NSMaxX($0.frame) > originCenter
-        }) ?? iterable.last else { return }
-        guard let targetIndex = ThumbnailsView.recycledViews.firstIndex(of: targetView) else { return }
+        guard
+            let targetView = iterable.first(where: {
+                if App.shared.userInterfaceLayoutDirection == .leftToRight {
+                    return leadingSide
+                        ? NSMaxX($0.frame) > originCenter : NSMinX($0.frame) < originCenter
+                }
+                return leadingSide
+                    ? NSMinX($0.frame) < originCenter : NSMaxX($0.frame) > originCenter
+            }) ?? iterable.last
+        else { return }
+        guard let targetIndex = ThumbnailsView.recycledViews.firstIndex(of: targetView) else {
+            return
+        }
         Windows.updateFocusedAndHoveredWindowIndex(targetIndex)
     }
 
@@ -98,9 +108,14 @@ class ThumbnailsView {
 
     private func layoutThumbnailViews(_ widthMax: CGFloat) -> (CGFloat, CGFloat, CGFloat)? {
         let labelHeight = ThumbnailsView.recycledViews.first!.label.fittingSize.height
+        if Windows.list.isEmpty {
+            scrollView.documentView!.subviews = []
+            return (0, 0, labelHeight)
+        }
         let height = ThumbnailView.height(labelHeight)
         let isLeftToRight = App.shared.userInterfaceLayoutDirection == .leftToRight
-        let startingX = isLeftToRight ? Appearance.interCellPadding : widthMax - Appearance.interCellPadding
+        let startingX =
+            isLeftToRight ? Appearance.interCellPadding : widthMax - Appearance.interCellPadding
         var currentX = startingX
         var currentY = Appearance.interCellPadding
         var maxX = CGFloat(0)
@@ -153,15 +168,22 @@ class ThumbnailsView {
         App.shared.userInterfaceLayoutDirection == .leftToRight ? currentX : currentX - width
     }
 
-    private func layoutParentViews(_ maxX: CGFloat, _ widthMax: CGFloat, _ maxY: CGFloat, _ labelHeight: CGFloat) {
+    private func layoutParentViews(
+        _ maxX: CGFloat, _ widthMax: CGFloat, _ maxY: CGFloat, _ labelHeight: CGFloat
+    ) {
         let heightMax = ThumbnailsPanel.maxThumbnailsHeight()
-        ThumbnailsView.thumbnailsWidth = min(maxX, widthMax)
+        let minThumbnailsWidth =
+            NSScreen.preferred.frame.width / 2 - Appearance.windowPadding * 2 - Appearance
+            .panelPadding * 2
+        ThumbnailsView.thumbnailsWidth = max(min(maxX, widthMax), minThumbnailsWidth)
         ThumbnailsView.thumbnailsHeight = min(maxY, heightMax)
         let frameWidth = ThumbnailsView.thumbnailsWidth + Appearance.windowPadding * 2
-        var frameHeight = ThumbnailsView.thumbnailsHeight + Appearance.windowPadding * 2
-        let originX = Appearance.windowPadding
+        var frameHeight =
+            ThumbnailsView.thumbnailsHeight == 0
+            ? 0 : ThumbnailsView.thumbnailsHeight + Appearance.windowPadding * 2
+        let originX = (frameWidth - min(maxX, widthMax)) / 2
         var originY = Appearance.windowPadding
-        if Preferences.appearanceStyle == .appIcons {
+        if ThumbnailsView.thumbnailsHeight > 0 && Preferences.appearanceStyle == .appIcons {
             // If there is title under the icon on the last line, the height of the title needs to be subtracted.
             frameHeight = frameHeight - Appearance.intraCellPadding - labelHeight
             originY = originY - Appearance.intraCellPadding - labelHeight
@@ -178,8 +200,11 @@ class ThumbnailsView {
         if let existingTrackingArea = scrollView.trackingAreas.first {
             scrollView.removeTrackingArea(existingTrackingArea)
         }
-        scrollView.addTrackingArea(NSTrackingArea(rect: scrollView.bounds,
-            options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: scrollView, userInfo: nil))
+        scrollView.addTrackingArea(
+            NSTrackingArea(
+                rect: scrollView.bounds,
+                options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: scrollView,
+                userInfo: nil))
     }
 
     func centerRows(_ maxX: CGFloat) {
@@ -195,7 +220,9 @@ class ThumbnailsView {
             } else {
                 shiftRow(maxX, rowWidth, rowStartIndex, index)
                 rowStartIndex = index
-                rowWidth = Appearance.interCellPadding + view.frame.size.width + Appearance.interCellPadding
+                rowWidth =
+                    Appearance.interCellPadding + view.frame.size.width
+                    + Appearance.interCellPadding
                 rowY = view.frame.origin.y
             }
         }
@@ -209,11 +236,13 @@ class ThumbnailsView {
         }
     }
 
-    private func shiftRow(_ maxX: CGFloat, _ rowWidth: CGFloat, _ rowStartIndex: Int, _ index: Int) {
+    private func shiftRow(_ maxX: CGFloat, _ rowWidth: CGFloat, _ rowStartIndex: Int, _ index: Int)
+    {
         let offset = ((maxX - rowWidth) / 2).rounded()
         if offset > 0 {
             for i in rowStartIndex..<index {
-                ThumbnailsView.recycledViews[i].frame.origin.x += App.shared.userInterfaceLayoutDirection == .leftToRight ? offset : -offset
+                ThumbnailsView.recycledViews[i].frame.origin.x +=
+                    App.shared.userInterfaceLayoutDirection == .leftToRight ? offset : -offset
             }
         }
     }
@@ -240,8 +269,12 @@ class ScrollView: NSScrollView {
     }
 
     private func observeScrollingEvents() {
-        NotificationCenter.default.addObserver(self, selector: #selector(scrollingStarted), name: NSScrollView.willStartLiveScrollNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(scrollingEnded), name: NSScrollView.didEndLiveScrollNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(scrollingStarted),
+            name: NSScrollView.willStartLiveScrollNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(scrollingEnded),
+            name: NSScrollView.didEndLiveScrollNotification, object: nil)
     }
 
     @objc private func scrollingStarted() {
@@ -265,7 +298,7 @@ class ScrollView: NSScrollView {
         if isCurrentlyScrolling { return }
         let mouseLocation = App.app.thumbnailsPanel.mouseLocationOutsideOfEventStream
         var target: ThumbnailView?
-        
+
         // First try the standard hitTest approach
         if let hit = hitTest(mouseLocation) {
             var view: NSView? = hit
@@ -274,7 +307,7 @@ class ScrollView: NSScrollView {
             }
             target = view as? ThumbnailView
         }
-        
+
         // If hitTest didn't find a ThumbnailView, manually check if mouse is over any thumbnail
         // This handles cases where the label extends beyond the ThumbnailView bounds
         if target == nil {
@@ -293,7 +326,7 @@ class ScrollView: NSScrollView {
                 }
             }
         }
-        
+
         if let target = target {
             if previousTarget != target {
                 previousTarget?.showOrHideWindowControls(false)
@@ -319,7 +352,8 @@ class ScrollView: NSScrollView {
     private func checkIfWithinInterPadding() -> Bool {
         if Preferences.appearanceStyle == .appIcons {
             let mouseLocation = App.app.thumbnailsPanel.mouseLocationOutsideOfEventStream
-            let mouseRect = NSRect(x: mouseLocation.x - Appearance.interCellPadding,
+            let mouseRect = NSRect(
+                x: mouseLocation.x - Appearance.interCellPadding,
                 y: mouseLocation.y - Appearance.interCellPadding,
                 width: 2 * Appearance.interCellPadding,
                 height: 2 * Appearance.interCellPadding)
@@ -339,7 +373,9 @@ class ScrollView: NSScrollView {
     override func scrollWheel(with event: NSEvent) {
         if event.modifierFlags.contains(.shift) && event.scrollingDeltaY == 0 {
             let cgEvent = event.cgEvent!
-            cgEvent.setDoubleValueField(.scrollWheelEventDeltaAxis1, value: cgEvent.getDoubleValueField(.scrollWheelEventDeltaAxis2))
+            cgEvent.setDoubleValueField(
+                .scrollWheelEventDeltaAxis1,
+                value: cgEvent.getDoubleValueField(.scrollWheelEventDeltaAxis2))
             cgEvent.setDoubleValueField(.scrollWheelEventDeltaAxis2, value: 0)
             super.scrollWheel(with: NSEvent(cgEvent: cgEvent)!)
         } else {

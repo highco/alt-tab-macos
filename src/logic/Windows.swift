@@ -14,7 +14,8 @@ class Windows {
         for (index, cgWindowId) in Spaces.windowsInSpaces(Spaces.visibleSpaces).enumerated() {
             windowLevelMap[cgWindowId] = index
         }
-        list = list
+        list =
+            list
             .sorted { w1, w2 in
                 (windowLevelMap[w1.cgWindowId] ?? .max) < (windowLevelMap[w2.cgWindowId] ?? .max)
             }
@@ -29,13 +30,19 @@ class Windows {
     private static func sort() {
         list.sort {
             // separate buckets for these types of windows
-            if Preferences.showWindowlessApps[App.app.shortcutIndex] == .showAtTheEnd && $0.isWindowlessApp != $1.isWindowlessApp {
+            if Preferences.showWindowlessApps[App.app.shortcutIndex] == .showAtTheEnd
+                && $0.isWindowlessApp != $1.isWindowlessApp
+            {
                 return $1.isWindowlessApp
             }
-            if Preferences.showHiddenWindows[App.app.shortcutIndex] == .showAtTheEnd && $0.isHidden != $1.isHidden {
+            if Preferences.showHiddenWindows[App.app.shortcutIndex] == .showAtTheEnd
+                && $0.isHidden != $1.isHidden
+            {
                 return $1.isHidden
             }
-            if Preferences.showMinimizedWindows[App.app.shortcutIndex] == .showAtTheEnd && $0.isMinimized != $1.isMinimized {
+            if Preferences.showMinimizedWindows[App.app.shortcutIndex] == .showAtTheEnd
+                && $0.isMinimized != $1.isMinimized
+            {
                 return $1.isMinimized
             }
             // sort within each buckets
@@ -57,7 +64,9 @@ class Windows {
                     order = .orderedAscending
                 } else if $1.isOnAllSpaces {
                     order = .orderedDescending
-                } else if let spaceIndex0 = $0.spaceIndexes.first, let spaceIndex1 = $1.spaceIndexes.first {
+                } else if let spaceIndex0 = $0.spaceIndexes.first,
+                    let spaceIndex1 = $1.spaceIndexes.first
+                {
                     order = spaceIndex0.compare(spaceIndex1)
                 }
                 if order == .orderedSame {
@@ -74,15 +83,22 @@ class Windows {
     static func updateIsFullscreenOnCurrentSpace() {
         let windowsOnCurrentSpace = Windows.list.filter { !$0.isWindowlessApp }
         for window in windowsOnCurrentSpace {
-            AXUIElement.retryAxCallUntilTimeout(context: window.debugId, after: .now() + humanPerceptionDelay, callType: .updateWindow) { [weak window] in
+            AXUIElement.retryAxCallUntilTimeout(
+                context: window.debugId, after: .now() + humanPerceptionDelay,
+                callType: .updateWindow
+            ) { [weak window] in
                 guard let window else { return }
-                try updateWindowSizeAndPositionAndFullscreen(window.axUiElement!, window.cgWindowId!, window)
+                try updateWindowSizeAndPositionAndFullscreen(
+                    window.axUiElement!, window.cgWindowId!, window)
             }
         }
     }
 
-    private static func compareByAppNameThenWindowTitle(_ w1: Window, _ w2: Window) -> ComparisonResult {
-        let order = w1.application.localizedName.localizedStandardCompare(w2.application.localizedName)
+    private static func compareByAppNameThenWindowTitle(_ w1: Window, _ w2: Window)
+        -> ComparisonResult
+    {
+        let order = w1.application.localizedName.localizedStandardCompare(
+            w2.application.localizedName)
         if order == .orderedSame {
             return w1.title.localizedStandardCompare(w2.title)
         }
@@ -91,23 +107,23 @@ class Windows {
 
     static func setInitialFocusedAndHoveredWindowIndex() {
         updateFocusedAndHoveredWindowIndex(0)
-//        let oldIndex = focusedWindowIndex
-//        focusedWindowIndex = 0
-//        ThumbnailsView.highlight(oldIndex)
-//        if let oldIndex = hoveredWindowIndex {
-//            hoveredWindowIndex = nil
-//            ThumbnailsView.highlight(oldIndex)
-//        }
-//        if let app = Applications.find(NSWorkspace.shared.frontmostApplication?.processIdentifier),
-//           (app.focusedWindow == nil || Preferences.windowOrder[App.app.shortcutIndex] != .recentlyFocused),
-//           let lastFocusedWindowIndex = getLastFocusedWindowIndex() {
-//            updateFocusedAndHoveredWindowIndex(lastFocusedWindowIndex)
-//        } else {
-//            cycleFocusedWindowIndex(1)
-//            if focusedWindowIndex == 0 {
-//                updateFocusedAndHoveredWindowIndex(0)
-//            }
-//        }
+        //        let oldIndex = focusedWindowIndex
+        //        focusedWindowIndex = 0
+        //        ThumbnailsView.highlight(oldIndex)
+        //        if let oldIndex = hoveredWindowIndex {
+        //            hoveredWindowIndex = nil
+        //            ThumbnailsView.highlight(oldIndex)
+        //        }
+        //        if let app = Applications.find(NSWorkspace.shared.frontmostApplication?.processIdentifier),
+        //           (app.focusedWindow == nil || Preferences.windowOrder[App.app.shortcutIndex] != .recentlyFocused),
+        //           let lastFocusedWindowIndex = getLastFocusedWindowIndex() {
+        //            updateFocusedAndHoveredWindowIndex(lastFocusedWindowIndex)
+        //        } else {
+        //            cycleFocusedWindowIndex(1)
+        //            if focusedWindowIndex == 0 {
+        //                updateFocusedAndHoveredWindowIndex(0)
+        //            }
+        //        }
     }
 
     static func getLastFocusedWindowIndex() -> Int? {
@@ -145,8 +161,12 @@ class Windows {
         }
     }
 
-    static func updateLastFocus(_ otherWindowAxUiElement: AXUIElement, _ otherWindowWid: CGWindowID) -> [Window]? {
-        if let focusedWindow = (list.first { $0.isEqualRobust(otherWindowAxUiElement, otherWindowWid) }) {
+    static func updateLastFocus(_ otherWindowAxUiElement: AXUIElement, _ otherWindowWid: CGWindowID)
+        -> [Window]?
+    {
+        if let focusedWindow =
+            (list.first { $0.isEqualRobust(otherWindowAxUiElement, otherWindowWid) })
+        {
             let focusedWindowOldFocusOrder = focusedWindow.lastFocusOrder
             var windowsToRefresh = [focusedWindow]
             list.forEach {
@@ -176,7 +196,8 @@ class Windows {
             lastWindowActivityType = .hover
         }
         if (!fromMouse || Preferences.mouseHoverEnabled)
-               && (newIndex != focusedWindowIndex || lastWindowActivityType == .hover) {
+            && (newIndex != focusedWindowIndex || lastWindowActivityType == .hover)
+        {
             let oldIndex = focusedWindowIndex
             focusedWindowIndex = newIndex
             ThumbnailsView.highlight(oldIndex)
@@ -187,19 +208,21 @@ class Windows {
         guard let index else { return }
         ThumbnailsView.highlight(index)
         let focusedView = ThumbnailsView.recycledViews[index]
-        App.app.thumbnailsPanel.thumbnailsView.scrollView.contentView.scrollToVisible(focusedView.frame)
+        App.app.thumbnailsPanel.thumbnailsView.scrollView.contentView.scrollToVisible(
+            focusedView.frame)
         voiceOverWindow(index)
     }
 
     static func previewFocusedWindowIfNeeded() {
         if App.app.appIsBeingUsed && SystemPermissions.screenRecordingPermission == .granted
-               && Preferences.previewFocusedWindow && !Preferences.onlyShowApplications()
-               && App.app.thumbnailsPanel.isKeyWindow,
-           let window = focusedWindow(),
-           let id = window.cgWindowId,
-           let thumbnail = window.thumbnail,
-           let position = window.position,
-           let size = window.size {
+            && Preferences.previewFocusedWindow && !Preferences.onlyShowApplications()
+            && App.app.thumbnailsPanel.isKeyWindow,
+            let window = focusedWindow(),
+            let id = window.cgWindowId,
+            let thumbnail = window.thumbnail,
+            let position = window.position,
+            let size = window.size
+        {
             App.app.previewPanel.show(id, thumbnail, position, size)
         } else {
             App.app.previewPanel.orderOut(nil)
@@ -225,10 +248,13 @@ class Windows {
     static func cycleFocusedWindowIndex(_ step: Int, allowWrap: Bool = true) {
         let nextIndex = windowIndexAfterCycling(step)
         // don't wrap-around at the end, if key-repeat
-        if (((step > 0 && nextIndex < focusedWindowIndex) || (step < 0 && nextIndex > focusedWindowIndex)) &&
-            (!allowWrap || ATShortcut.lastEventIsARepeat || KeyRepeatTimer.timer?.isValid ?? false))
-               // don't cycle to another row, if !allowWrap
-               || (!allowWrap && list[nextIndex].rowIndex != list[focusedWindowIndex].rowIndex) {
+        if (((step > 0 && nextIndex < focusedWindowIndex)
+            || (step < 0 && nextIndex > focusedWindowIndex))
+            && (!allowWrap || ATShortcut.lastEventIsARepeat
+                || KeyRepeatTimer.timer?.isValid ?? false))
+            // don't cycle to another row, if !allowWrap
+            || (!allowWrap && list[nextIndex].rowIndex != list[focusedWindowIndex].rowIndex)
+        {
             return
         }
         updateFocusedAndHoveredWindowIndex(nextIndex)
@@ -266,7 +292,9 @@ class Windows {
 
     /// tabs detection is a flaky work-around the lack of public API to observe OS tabs
     /// see: https://github.com/lwouis/alt-tab-macos/issues/1540
-    private static func detectTabbedWindows(_ window: Window, _ cgsWindowIds: [CGWindowID], _ visibleCgsWindowIds: [CGWindowID]) {
+    private static func detectTabbedWindows(
+        _ window: Window, _ cgsWindowIds: [CGWindowID], _ visibleCgsWindowIds: [CGWindowID]
+    ) {
         if let cgWindowId = window.cgWindowId {
             if window.isMinimized || window.isHidden {
                 if #available(macOS 13.0, *) {
@@ -283,7 +311,10 @@ class Windows {
     }
 
     static func updatesBeforeShowing() -> Bool {
-        if list.count == 0 || MissionControl.state() == .showAllWindows || MissionControl.state() == .showFrontWindows { return false }
+        if MissionControl.state() == .showAllWindows || MissionControl.state() == .showFrontWindows
+        {
+            return false
+        }
         // TODO: find a way to update space info when spaces are changed, instead of on every trigger
         // workaround: when Preferences > Mission Control > "Displays have separate Spaces" is unchecked,
         // switching between displays doesn't trigger .activeSpaceDidChangeNotification; we get the latest manually
@@ -298,7 +329,6 @@ class Windows {
         }
         refreshWhichWindowsToShowTheUser()
         sort()
-        if (!list.contains { $0.shouldShowTheUser }) { return false }
         return true
     }
 
@@ -309,19 +339,25 @@ class Windows {
         if let cgWindowId = window.cgWindowId {
             let spaceIds = cgWindowId.spaces()
             window.spaceIds = spaceIds
-            window.spaceIndexes = spaceIds.compactMap { spaceId in Spaces.idsAndIndexes.first { $0.0 == spaceId }?.1 }
+            window.spaceIndexes = spaceIds.compactMap { spaceId in
+                Spaces.idsAndIndexes.first { $0.0 == spaceId }?.1
+            }
             window.isOnAllSpaces = spaceIds.count > 1
         }
     }
 
     // dispatch screenshot requests off the main-thread, then wait for completion
     static func refreshThumbnailsAsync(_ windows: [Window], _ source: RefreshCausedBy) {
-        guard !windows.isEmpty && SystemPermissions.screenRecordingPermission == .granted
-               && !Preferences.onlyShowApplications()
-               && (!Appearance.hideThumbnails || Preferences.previewFocusedWindow) else { return }
+        guard
+            !windows.isEmpty && SystemPermissions.screenRecordingPermission == .granted
+                && !Preferences.onlyShowApplications()
+                && (!Appearance.hideThumbnails || Preferences.previewFocusedWindow)
+        else { return }
         var eligibleWindows = [Window]()
         for window in windows {
-            if !window.isWindowlessApp, let cgWindowId = window.cgWindowId, cgWindowId != CGWindowID(bitPattern: -1) {
+            if !window.isWindowlessApp, let cgWindowId = window.cgWindowId,
+                cgWindowId != CGWindowID(bitPattern: -1)
+            {
                 eligibleWindows.append(window)
             }
         }
@@ -329,14 +365,20 @@ class Windows {
         screenshotEligibleWindowsAndUpdateUi(eligibleWindows, source)
     }
 
-    private static func screenshotEligibleWindowsAndUpdateUi(_ eligibleWindows: [Window], _ source: RefreshCausedBy) {
+    private static func screenshotEligibleWindowsAndUpdateUi(
+        _ eligibleWindows: [Window], _ source: RefreshCausedBy
+    ) {
         for window in eligibleWindows {
             BackgroundWork.screenshotsQueue.addOperation { [weak window] in
                 if source == .refreshOnlyThumbnailsAfterShowUi && !App.app.appIsBeingUsed { return }
                 if let wid = window?.cgWindowId, let cgImage = wid.screenshot() {
-                    if source == .refreshOnlyThumbnailsAfterShowUi && !App.app.appIsBeingUsed { return }
+                    if source == .refreshOnlyThumbnailsAfterShowUi && !App.app.appIsBeingUsed {
+                        return
+                    }
                     DispatchQueue.main.async { [weak window] in
-                        if source == .refreshOnlyThumbnailsAfterShowUi && !App.app.appIsBeingUsed { return }
+                        if source == .refreshOnlyThumbnailsAfterShowUi && !App.app.appIsBeingUsed {
+                            return
+                        }
                         window?.refreshThumbnail(cgImage)
                     }
                 }
@@ -364,20 +406,32 @@ class Windows {
         window.shouldShowTheUser =
             !(window.application.bundleIdentifier.flatMap { id in
                 Preferences.blacklist.contains {
-                    id.hasPrefix($0.bundleIdentifier) &&
-                        ($0.hide == .always || (window.isWindowlessApp && $0.hide != .none))
+                    id.hasPrefix($0.bundleIdentifier)
+                        && ($0.hide == .always || (window.isWindowlessApp && $0.hide != .none))
                 }
-            } ?? false) &&
-            !(Preferences.appsToShow[App.app.shortcutIndex] == .active && window.application.pid != NSWorkspace.shared.frontmostApplication?.processIdentifier) &&
-            !(Preferences.appsToShow[App.app.shortcutIndex] == .nonActive && window.application.pid == NSWorkspace.shared.frontmostApplication?.processIdentifier) &&
-            !(!(Preferences.showHiddenWindows[App.app.shortcutIndex] != .hide) && window.isHidden) &&
-            ((Preferences.showWindowlessApps[App.app.shortcutIndex] != .hide && window.isWindowlessApp) ||
-                !window.isWindowlessApp &&
-                !(!(Preferences.showFullscreenWindows[App.app.shortcutIndex] != .hide) && window.isFullscreen) &&
-                !(!(Preferences.showMinimizedWindows[App.app.shortcutIndex] != .hide) && window.isMinimized) &&
-                !(Preferences.spacesToShow[App.app.shortcutIndex] == .visible && !Spaces.visibleSpaces.contains { visibleSpace in window.spaceIds.contains { $0 == visibleSpace } }) &&
-                !(Preferences.screensToShow[App.app.shortcutIndex] == .showingAltTab && !window.isOnScreen(NSScreen.preferred)) &&
-                (Preferences.showTabsAsWindows || !window.isTabbed))
+            } ?? false)
+            && !(Preferences.appsToShow[App.app.shortcutIndex] == .active
+                && window.application.pid
+                    != NSWorkspace.shared.frontmostApplication?.processIdentifier)
+            && !(Preferences.appsToShow[App.app.shortcutIndex] == .nonActive
+                && window.application.pid
+                    == NSWorkspace.shared.frontmostApplication?.processIdentifier)
+            && !(!(Preferences.showHiddenWindows[App.app.shortcutIndex] != .hide)
+                && window.isHidden)
+            && ((Preferences.showWindowlessApps[App.app.shortcutIndex] != .hide
+                && window.isWindowlessApp)
+                || !window.isWindowlessApp
+                    && !(!(Preferences.showFullscreenWindows[App.app.shortcutIndex] != .hide)
+                        && window.isFullscreen)
+                    && !(!(Preferences.showMinimizedWindows[App.app.shortcutIndex] != .hide)
+                        && window.isMinimized)
+                    && !(Preferences.spacesToShow[App.app.shortcutIndex] == .visible
+                        && !Spaces.visibleSpaces.contains { visibleSpace in
+                            window.spaceIds.contains { $0 == visibleSpace }
+                        })
+                    && !(Preferences.screensToShow[App.app.shortcutIndex] == .showingAltTab
+                        && !window.isOnScreen(NSScreen.preferred))
+                    && (Preferences.showTabsAsWindows || !window.isTabbed))
     }
 
     /// Selects the most appropriate main window from a given list of windows.
