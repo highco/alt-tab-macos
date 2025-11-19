@@ -68,6 +68,8 @@ class App: AppCenterApplication {
             isOptionKeyPressed = true
             if !appIsBeingUsed {
                 showUi()
+            } else if thumbnailsPanel.userHasSelectedAWindow {
+                focusSelectedWindow(Windows.focusedWindow())
             } else {
                 hideUi()
             }

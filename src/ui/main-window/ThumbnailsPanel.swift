@@ -75,6 +75,11 @@ class ThumbnailsPanel: NSPanel {
             Windows.cycleFocusedWindowIndex(1, allowWrap: true)
             return
         }
+        // Intercept Escape key to hide UI
+        if event.type == .keyDown && event.keyCode == 53 { // Escape key
+            App.app.hideUi()
+            return
+        }
         super.sendEvent(event)
     }
 
