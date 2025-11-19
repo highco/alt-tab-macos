@@ -90,7 +90,7 @@ class Windows {
     }
 
     static func setInitialFocusedAndHoveredWindowIndex() {
-        cycleFocusedWindowIndex(0)
+        updateFocusedAndHoveredWindowIndex(0)
 //        let oldIndex = focusedWindowIndex
 //        focusedWindowIndex = 0
 //        ThumbnailsView.highlight(oldIndex)

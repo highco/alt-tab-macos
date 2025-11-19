@@ -67,6 +67,8 @@ class App: AppCenterApplication {
             isOptionKeyPressed = true
             if !appIsBeingUsed {
                 showUi()
+            } else {
+                hideUi()
             }
         } else if !optionPressed && isOptionKeyPressed {
             // Option key was just released
@@ -252,10 +254,11 @@ class App: AppCenterApplication {
         MainMenu.toggle(enabled: false)
         NSScreen.updatePreferred()
         Applications.manuallyRefreshAllWindows()
-        if isVeryFirstSummon {
-            Windows.sortByLevel()
-            isVeryFirstSummon = false
-        }
+        Windows.sortByLevel()
+        // if isVeryFirstSummon {
+        //     Windows.sortByLevel()
+        //     isVeryFirstSummon = false
+        // }
         isFirstSummon = false
         if !Windows.updatesBeforeShowing() { hideUi(); return }
         Windows.setInitialFocusedAndHoveredWindowIndex()
