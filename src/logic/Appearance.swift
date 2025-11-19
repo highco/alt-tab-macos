@@ -14,10 +14,9 @@ class Appearance {
     static var windowMinWidthInRow = CGFloat(1000)
     static var windowMaxWidthInRow = CGFloat(1000)
 
-    // application shelf
+    static var panelPadding = CGFloat(64)
     static var applicationShelfItemPadding = CGFloat(12)
     
-
     // size: constants
     static let maxHeightOnScreen = CGFloat(0.8)
     static let interCellPadding = CGFloat(1)

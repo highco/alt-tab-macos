@@ -130,17 +130,17 @@ class ThumbnailsPanel: NSPanel {
 
     private func layoutShelfAndThumbnails() {
         let thumbnailsSize = thumbnailsView.contentView.frame.size
-        thumbnailsView.contentView.frame.origin = .zero
+        thumbnailsView.contentView.frame.origin = NSPoint(x: Appearance.panelPadding, y: Appearance.panelPadding)
         let width = thumbnailsSize.width
         let shelfHeight = ApplicationsShelfView.defaultHeight
         applicationsShelfView.frame = NSRect(
-            x: 0,
-            y: thumbnailsSize.height + ThumbnailsPanel.shelfSpacing,
+            x: Appearance.panelPadding,
+            y: thumbnailsSize.height + ThumbnailsPanel.shelfSpacing + Appearance.panelPadding,
             width: width,
             height: shelfHeight
         )
         let totalHeight = thumbnailsSize.height + ThumbnailsPanel.shelfSpacing + shelfHeight
-        panelBackgroundView.frame = NSRect(origin: .zero, size: NSSize(width: width, height: totalHeight))
+        panelBackgroundView.frame = NSRect(origin: .zero, size: NSSize(width: width + 2 * Appearance.panelPadding, height: totalHeight + 2 * Appearance.panelPadding))
         setContentSize(panelBackgroundView.frame.size)
     }
 
