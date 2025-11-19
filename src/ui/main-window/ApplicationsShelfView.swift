@@ -1,7 +1,13 @@
 import Cocoa
 
 class ApplicationsShelfView: NSView {
-    static let defaultHeight: CGFloat = 164
+    static var defaultHeight: CGFloat {
+        let paddingVertical: CGFloat = 12
+        let searchFieldHeight: CGFloat = 34
+        let buttonHeight: CGFloat = 82
+        let buttonPadding = Appearance.applicationShelfItemPadding
+        return paddingVertical * 2 + searchFieldHeight + Appearance.panelSectionSpacing + buttonHeight + buttonPadding * 2
+    }
 
     private let paddingHorizontal: CGFloat = 18
     private let paddingVertical: CGFloat = 12
@@ -89,7 +95,7 @@ class ApplicationsShelfView: NSView {
             width: width - paddingHorizontal * 2,
             height: searchFieldHeight
         )
-        let shelfHeight = max(0, bounds.height - paddingVertical * 2 - searchFieldHeight)
+        let shelfHeight = max(0, bounds.height - paddingVertical * 2 - searchFieldHeight - Appearance.panelSectionSpacing)
         scrollView.frame = NSRect(
             x: paddingHorizontal,
             y: paddingVertical,

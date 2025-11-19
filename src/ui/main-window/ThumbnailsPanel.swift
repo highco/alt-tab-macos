@@ -1,10 +1,10 @@
 import Cocoa
+import IOKit.ps
 
 class ThumbnailsPanel: NSPanel {
-    private static let shelfSpacing: CGFloat = 12
-
     var thumbnailsView = ThumbnailsView()
     private let applicationsShelfView = ApplicationsShelfView()
+    private let infoBar = InfoBar()
     private let panelBackgroundView: EffectView = makeAppropriateEffectView()
     private var catalogObserver: NSObjectProtocol?
     
@@ -23,6 +23,7 @@ class ThumbnailsPanel: NSPanel {
         contentView! = panelBackgroundView
         panelBackgroundView.addSubview(thumbnailsView.contentView)
         panelBackgroundView.addSubview(applicationsShelfView)
+        panelBackgroundView.addSubview(infoBar)
         applicationsShelfView.onLaunchRequested = { [weak self] item in
             self?.launchApplication(item)
         }
@@ -117,7 +118,7 @@ class ThumbnailsPanel: NSPanel {
 
     static func maxThumbnailsHeight() -> CGFloat {
         let available = NSScreen.preferred.frame.height * Appearance.maxHeightOnScreen - Appearance.windowPadding * 2
-        let reserved = ApplicationsShelfView.defaultHeight + ThumbnailsPanel.shelfSpacing
+        let reserved = ApplicationsShelfView.defaultHeight + Appearance.panelSectionSpacing * 2 + InfoBar.defaultHeight
         return max(0, (available - reserved).rounded())
     }
 
@@ -133,13 +134,24 @@ class ThumbnailsPanel: NSPanel {
         thumbnailsView.contentView.frame.origin = NSPoint(x: Appearance.panelPadding, y: Appearance.panelPadding)
         let width = thumbnailsSize.width
         let shelfHeight = ApplicationsShelfView.defaultHeight
+        let spacing = Appearance.panelSectionSpacing
+
         applicationsShelfView.frame = NSRect(
             x: Appearance.panelPadding,
-            y: thumbnailsSize.height + ThumbnailsPanel.shelfSpacing + Appearance.panelPadding,
+            y: thumbnailsSize.height + spacing + Appearance.panelPadding,
             width: width,
             height: shelfHeight
         )
-        let totalHeight = thumbnailsSize.height + ThumbnailsPanel.shelfSpacing + shelfHeight
+        
+        let infoBarHeight = InfoBar.defaultHeight
+        infoBar.frame = NSRect(
+            x: Appearance.panelPadding,
+            y: thumbnailsSize.height + spacing + shelfHeight + spacing + Appearance.panelPadding,
+            width: width,
+            height: infoBarHeight
+        )
+        
+        let totalHeight = thumbnailsSize.height + spacing + shelfHeight + spacing + infoBarHeight
         panelBackgroundView.frame = NSRect(origin: .zero, size: NSSize(width: width + 2 * Appearance.panelPadding, height: totalHeight + 2 * Appearance.panelPadding))
         setContentSize(panelBackgroundView.frame.size)
     }
@@ -192,6 +204,167 @@ extension ThumbnailsPanel: NSWindowDelegate {
             if App.app.appIsBeingUsed {
                 App.app.thumbnailsPanel.makeKeyAndOrderFront(nil)
             }
+        }
+    }
+}
+
+class InfoBar: NSView {
+    static var defaultHeight: CGFloat { Appearance.infoBarHeight }
+
+    private let dateLabel = NSTextField(labelWithString: "")
+    private let timeLabel = NSTextField(labelWithString: "")
+    private let batteryLabel = NSTextField(labelWithString: "")
+    private let batteryIcon = BatteryIconView()
+    private var timer: Timer?
+
+    init() {
+        super.init(frame: .zero)
+        setupUI()
+        updateData()
+        startTimer()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        timer?.invalidate()
+    }
+
+    private func setupUI() {
+        let font = NSFont.systemFont(ofSize: Appearance.infoBarHeight * 0.5)
+        let clockFont = NSFont.systemFont(ofSize: Appearance.infoBarClockHeight)
+        
+        [dateLabel, batteryLabel].forEach {
+            $0.font = font
+            $0.textColor = Appearance.fontColor
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        timeLabel.font = clockFont
+        timeLabel.textColor = Appearance.fontColor
+        timeLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        batteryIcon.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(dateLabel)
+        addSubview(timeLabel)
+        addSubview(batteryLabel)
+        addSubview(batteryIcon)
+
+        let batteryHeight = Appearance.infoBarHeight * 0.42
+        let batteryWidth = batteryHeight * 2.2
+
+        NSLayoutConstraint.activate([
+            // Date Left
+            dateLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Appearance.panelSectionSpacing),
+            dateLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+
+            // Time Center
+            timeLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            timeLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+
+            // Battery Right
+            batteryLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Appearance.panelSectionSpacing),
+            batteryLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            
+            batteryIcon.trailingAnchor.constraint(equalTo: batteryLabel.leadingAnchor, constant: -6),
+            batteryIcon.centerYAnchor.constraint(equalTo: centerYAnchor),
+            batteryIcon.widthAnchor.constraint(equalToConstant: batteryWidth),
+            batteryIcon.heightAnchor.constraint(equalToConstant: batteryHeight)
+        ])
+    }
+
+    private func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateData()
+        }
+    }
+
+    private func updateData() {
+        let now = Date()
+        
+        // Date
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .full
+        dateFormatter.timeStyle = .none
+        dateLabel.stringValue = dateFormatter.string(from: now)
+
+        // Time
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateStyle = .none
+        timeFormatter.timeStyle = .medium
+        timeLabel.stringValue = timeFormatter.string(from: now)
+
+        // Battery
+        if let (level, isCharging) = getBatteryInfo() {
+            batteryLabel.stringValue = "\(level)%"
+            batteryIcon.level = Double(level) / 100.0
+            batteryIcon.isCharging = isCharging
+            batteryIcon.isHidden = false
+            batteryLabel.isHidden = false
+        } else {
+            batteryIcon.isHidden = true
+            batteryLabel.isHidden = true
+        }
+        
+        // Update colors
+        [dateLabel, timeLabel, batteryLabel].forEach {
+             $0.textColor = Appearance.fontColor
+        }
+    }
+
+    private func getBatteryInfo() -> (Int, Bool)? {
+        let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue()
+        let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [CFTypeRef]
+        
+        for source in sources ?? [] {
+            let description = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: Any]
+            
+            if let type = description?[kIOPSTypeKey] as? String, type == kIOPSInternalBatteryType {
+                let currentCapacity = description?[kIOPSCurrentCapacityKey] as? Int ?? 0
+                let maxCapacity = description?[kIOPSMaxCapacityKey] as? Int ?? 0
+                let isCharging = description?[kIOPSIsChargingKey] as? Bool ?? false
+                
+                let percentage = maxCapacity > 0 ? (Double(currentCapacity) / Double(maxCapacity) * 100.0) : 0
+                return (Int(percentage), isCharging)
+            }
+        }
+        return nil
+    }
+}
+
+class BatteryIconView: NSView {
+    var level: Double = 1.0 { didSet { needsDisplay = true } }
+    var isCharging: Bool = false { didSet { needsDisplay = true } }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        
+        let color = Appearance.fontColor
+        color.setStroke()
+        color.setFill()
+        
+        // Body
+        let bodyRect = NSRect(x: 0, y: 0, width: bounds.width - 3, height: bounds.height)
+        let bodyPath = NSBezierPath(roundedRect: bodyRect, xRadius: 1, yRadius: 1)
+        bodyPath.lineWidth = 1
+        bodyPath.stroke()
+        
+        // Nub
+        let nubRect = NSRect(x: bounds.width - 3, y: bounds.height / 2 - 2, width: 3, height: 4)
+        let nubPath = NSBezierPath(roundedRect: nubRect, xRadius: 1, yRadius: 1)
+        nubPath.fill()
+        
+        // Level
+        if level > 0 {
+            let margin: CGFloat = 2
+            let maxLevelWidth = bodyRect.width - margin * 2
+            let levelWidth = maxLevelWidth * CGFloat(level)
+            let levelRect = NSRect(x: margin, y: margin, width: levelWidth, height: bodyRect.height - margin * 2)
+            let levelPath = NSBezierPath(roundedRect: levelRect, xRadius: 0.5, yRadius: 0.5)
+            levelPath.fill()
         }
     }
 }
