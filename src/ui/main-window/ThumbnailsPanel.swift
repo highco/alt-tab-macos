@@ -7,6 +7,8 @@ class ThumbnailsPanel: NSPanel {
     private let applicationsShelfView = ApplicationsShelfView()
     private let panelBackgroundView: EffectView = makeAppropriateEffectView()
     private var catalogObserver: NSObjectProtocol?
+    
+    var userHasSelectedAWindow: Bool = false
 
     override var canBecomeKey: Bool { true }
 
@@ -64,6 +66,17 @@ class ThumbnailsPanel: NSPanel {
         applicationsShelfView.handleArrowKey(direction)
     }
 
+    override func sendEvent(_ event: NSEvent) {
+        print("ThumbnailsPanel sendEvent: \(event)")
+        // Intercept Tab key before it reaches any control (including search field)
+        if event.type == .keyDown && event.keyCode == 48 { // Tab key
+            userHasSelectedAWindow = true
+            Windows.cycleFocusedWindowIndex(1, allowWrap: true)
+            return
+        }
+        super.sendEvent(event)
+    }
+
     override func orderOut(_ sender: Any?) {
         if Preferences.fadeOutAnimation {
             NSAnimationContext.runAnimationGroup(
@@ -79,6 +92,7 @@ class ThumbnailsPanel: NSPanel {
         updateAppearance()
         refreshApplicationsShelf(resetSearch: true)
         alphaValue = 1
+        userHasSelectedAWindow = false
         makeKeyAndOrderFront(nil)
         MouseEvents.toggle(true)
         thumbnailsView.scrollView.flashScrollers()
