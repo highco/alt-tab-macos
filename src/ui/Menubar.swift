@@ -22,7 +22,7 @@ class Menubar {
         permissionCalloutMenuItem.view = PermissionCallout()
         let calloutSeparator = NSMenuItem.separator()
         permissionCalloutMenuItems = [permissionCalloutMenuItem, calloutSeparator]
-        addMenuItem(NSLocalizedString("Show", comment: "Menubar option"), #selector(App.app.showUiFromShortcut0), "", "eye")
+        addMenuItem(NSLocalizedString("Show", comment: "Menubar option"), #selector(App.app.showUi), "", "eye")
         menu.addItem(NSMenuItem.separator())
         addMenuItem(NSLocalizedString("Settings…", comment: "Menubar option"), #selector(App.app.showPreferencesWindow), ",", "gear")
         addMenuItem(NSLocalizedString("Check for updates…", comment: "Menubar option"), #selector(App.app.checkForUpdatesNow), "", "checkmark.arrow.trianglehead.clockwise")
@@ -54,7 +54,7 @@ class Menubar {
     @objc static func statusItemOnClick() {
         // NSApp.currentEvent == nil if the icon is "clicked" through VoiceOver
         if let type = NSApp.currentEvent?.type, type != .leftMouseDown {
-            App.app.showUiFromShortcut0()
+            App.app.showUi()
         } else {
             statusItem.popUpMenu(Menubar.menu)
         }

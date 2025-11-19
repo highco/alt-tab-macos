@@ -120,8 +120,7 @@
 			"problemMatcher": {
 				"owner": "xcode",
 				"fileLocation": [
-					"relative",
-					"${workspaceFolder}"
+					"absolute"
 				],
 				"pattern": {
 					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",

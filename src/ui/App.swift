@@ -149,14 +149,6 @@ class App: AppCenterApplication {
         }
     }
 
-    func showUi(_ shortcutIndex: Int) {
-        showUiOrCycleSelection(shortcutIndex, true)
-    }
-
-    @objc func showUiFromShortcut0() {
-        showUi(0)
-    }
-
     @objc func showAboutTab() {
         preferencesWindow.selectTab("about")
         showPreferencesWindow()
@@ -214,36 +206,27 @@ class App: AppCenterApplication {
         Applications.refreshBadgesAsync()
     }
 
-    func showUiOrCycleSelection(_ shortcutIndex: Int, _ forceDoNothingOnRelease_: Bool) {
-        forceDoNothingOnRelease = forceDoNothingOnRelease_
-        Logger.debug(shortcutIndex, self.shortcutIndex, isFirstSummon)
-        App.app.appIsBeingUsed = true
-        if isFirstSummon || shortcutIndex != self.shortcutIndex {
-            MainMenu.toggle(enabled: false)
-            NSScreen.updatePreferred()
-            Applications.manuallyRefreshAllWindows()
-            if isVeryFirstSummon {
-                Windows.sortByLevel()
-                isVeryFirstSummon = false
-            }
-            isFirstSummon = false
-            self.shortcutIndex = shortcutIndex
-            if !Windows.updatesBeforeShowing() { hideUi(); return }
-            Windows.setInitialFocusedAndHoveredWindowIndex()
-            if Preferences.windowDisplayDelay == DispatchTimeInterval.milliseconds(0) {
-                buildUiAndShowPanel()
-            } else {
-                delayedDisplayScheduled += 1
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Preferences.windowDisplayDelay) { () -> () in
-                    if self.delayedDisplayScheduled == 1 {
-                        self.buildUiAndShowPanel()
-                    }
-                    self.delayedDisplayScheduled -= 1
-                }
-            }
+    @objc func showUi() {
+        MainMenu.toggle(enabled: false)
+        NSScreen.updatePreferred()
+        Applications.manuallyRefreshAllWindows()
+        if isVeryFirstSummon {
+            Windows.sortByLevel()
+            isVeryFirstSummon = false
+        }
+        isFirstSummon = false
+        if !Windows.updatesBeforeShowing() { hideUi(); return }
+        Windows.setInitialFocusedAndHoveredWindowIndex()
+        if Preferences.windowDisplayDelay == DispatchTimeInterval.milliseconds(0) {
+            buildUiAndShowPanel()
         } else {
-            cycleSelection(.leading)
-            KeyRepeatTimer.toggleRepeatingKeyNextWindow()
+            delayedDisplayScheduled += 1
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Preferences.windowDisplayDelay) { () -> () in
+                if self.delayedDisplayScheduled == 1 {
+                    self.buildUiAndShowPanel()
+                }
+                self.delayedDisplayScheduled -= 1
+            }
         }
     }
 

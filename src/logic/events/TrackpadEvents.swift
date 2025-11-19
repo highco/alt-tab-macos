@@ -152,7 +152,7 @@ class TriggerSwipeDetector {
                 }
             }
             reset()
-            DispatchQueue.main.async { App.app.showUiOrCycleSelection(Preferences.gestureIndex, false) }
+            DispatchQueue.main.async { App.app.showUi() }
             return true
         }
         return nil

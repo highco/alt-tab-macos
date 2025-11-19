@@ -10,9 +10,9 @@ class ControlsTab {
         "holdShortcut2": { App.app.focusTarget() },
         "holdShortcut3": { App.app.focusTarget() },
         "focusWindowShortcut": { App.app.focusTarget() },
-        "nextWindowShortcut": { App.app.showUiOrCycleSelection(0, false) },
-        "nextWindowShortcut2": { App.app.showUiOrCycleSelection(1, false) },
-        "nextWindowShortcut3": { App.app.showUiOrCycleSelection(2, false) },
+        "nextWindowShortcut": { App.app.cycleSelection(.right) },
+        "nextWindowShortcut2": { App.app.cycleSelection(.right) },
+        "nextWindowShortcut3": { App.app.cycleSelection(.right) },
         "previousWindowShortcut": { App.app.previousWindowShortcutWithRepeatingKey() },
         "→": { App.app.thumbnailsPanel.handleShelfArrowKey(.right) },
         "←": { App.app.thumbnailsPanel.handleShelfArrowKey(.left) },
@@ -175,26 +175,26 @@ class ControlsTab {
     }
 
     @objc static func shortcutChangedCallback(_ sender: NSControl) {
-        let controlId = sender.identifier!.rawValue
-        if controlId.hasPrefix("holdShortcut") {
-            let i = Preferences.nameToIndex(controlId)
-            addShortcut(.up, .global, Shortcut(keyEquivalent: Preferences.holdShortcut[i])!, controlId, i)
-            if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
-                nextWindowShortcut.restrictModifiers([(sender as! CustomRecorderControl).objectValue!.modifierFlags])
-                shortcutChangedCallback(nextWindowShortcut)
-            }
-        } else {
-            let newValue = combineHoldAndNextWindow(controlId, sender)
-            let newShortcut = Shortcut(keyEquivalent: newValue)
-            if newValue.isEmpty || newShortcut == nil {
-                removeShortcutIfExists(controlId)
-                restrictModifiersOfHoldShortcut(controlId, [])
-                (sender as! CustomRecorderControl).objectValue = nil
-            } else {
-                addShortcut(.down, controlId.hasPrefix("nextWindowShortcut") ? .global : .local, newShortcut!, controlId, nil)
-                restrictModifiersOfHoldShortcut(controlId, [(sender as! CustomRecorderControl).objectValue!.modifierFlags])
-            }
-        }
+        // let controlId = sender.identifier!.rawValue
+        // if controlId.hasPrefix("holdShortcut") {
+        //     let i = Preferences.nameToIndex(controlId)
+        //     addShortcut(.up, .global, Shortcut(keyEquivalent: Preferences.holdShortcut[i])!, controlId, i)
+        //     if let nextWindowShortcut = shortcutControls[Preferences.indexToName("nextWindowShortcut", i)]?.0 {
+        //         nextWindowShortcut.restrictModifiers([(sender as! CustomRecorderControl).objectValue!.modifierFlags])
+        //         shortcutChangedCallback(nextWindowShortcut)
+        //     }
+        // } else {
+        //     let newValue = combineHoldAndNextWindow(controlId, sender)
+        //     let newShortcut = Shortcut(keyEquivalent: newValue)
+        //     if newValue.isEmpty || newShortcut == nil {
+        //         removeShortcutIfExists(controlId)
+        //         restrictModifiersOfHoldShortcut(controlId, [])
+        //         (sender as! CustomRecorderControl).objectValue = nil
+        //     } else {
+        //         addShortcut(.down, controlId.hasPrefix("nextWindowShortcut") ? .global : .local, newShortcut!, controlId, nil)
+        //         restrictModifiersOfHoldShortcut(controlId, [(sender as! CustomRecorderControl).objectValue!.modifierFlags])
+        //     }
+        // }
     }
 
     private static func restrictModifiersOfHoldShortcut(_ controlId: String, _ modifiers: NSEvent.ModifierFlags) {
