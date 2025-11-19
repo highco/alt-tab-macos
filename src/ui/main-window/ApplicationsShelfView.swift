@@ -5,16 +5,20 @@ class ApplicationsShelfView: NSView {
         let paddingVertical: CGFloat = 12
         let searchFieldHeight: CGFloat = 34
         let buttonHeight: CGFloat = 82
+        let rowSpacing: CGFloat = Appearance.applicationShelfItemSpacing
         let buttonPadding = Appearance.applicationShelfItemPadding
-        return paddingVertical * 2 + searchFieldHeight + Appearance.panelSectionSpacing + buttonHeight + buttonPadding * 2
+        let rowCount: CGFloat = 2
+        let rowHeight = buttonHeight + buttonPadding * 2
+        return paddingVertical * 2 + searchFieldHeight + Appearance.panelSectionSpacing + rowHeight * rowCount + rowSpacing * (rowCount - 1)
     }
 
     private let paddingHorizontal: CGFloat = 18
     private let paddingVertical: CGFloat = 12
     private let searchFieldHeight: CGFloat = 34
     private let buttonSize = NSSize(width: 90, height: 82)
-    private let buttonSpacing: CGFloat = 10
-    private let maxVisibleItems = 10
+    private var buttonSpacing: CGFloat { Appearance.applicationShelfItemSpacing }
+    private var maxVisibleItems: Int { Appearance.applicationShelfItemCount }
+    private var itemsPerRow = 1
 
     let searchField = NSSearchField()
     private let scrollView = NSScrollView(frame: .zero)
@@ -66,10 +70,14 @@ class ApplicationsShelfView: NSView {
 
     func handleArrowKey(_ direction: Direction) {
         switch direction {
-        case .left, .up, .trailing:
+        case .left, .trailing:
             moveSelection(offset: -1)
-        case .right, .down, .leading:
+        case .right, .leading:
             moveSelection(offset: 1)
+        case .up:
+            moveSelection(offset: -itemsPerRow)
+        case .down:
+            moveSelection(offset: itemsPerRow)
         }
     }
 
@@ -166,17 +174,30 @@ class ApplicationsShelfView: NSView {
     private func layoutButtons() {
         let buttonPadding = Appearance.applicationShelfItemPadding
         let effectiveButtonHeight = buttonSize.height + buttonPadding * 2
-        let availableHeight = max(scrollView.bounds.height, effectiveButtonHeight)
-        // Position button with padding at bottom to ensure extended background is visible
-        let verticalOffset = buttonPadding
-        var currentX: CGFloat = buttonPadding
-        for button in buttons {
-            button.frame = NSRect(x: currentX, y: verticalOffset, width: buttonSize.width, height: buttonSize.height)
-            // Account for padding on both sides when spacing buttons
-            currentX += buttonSize.width + buttonSpacing + buttonPadding * 2
+        let effectiveButtonWidth = buttonSize.width + buttonPadding * 2
+        let horizontalStep = effectiveButtonWidth + buttonSpacing
+        let availableWidth = max(scrollView.bounds.width, effectiveButtonWidth)
+        let columns = max(1, Int((availableWidth + buttonSpacing) / horizontalStep))
+        itemsPerRow = columns
+
+        for (index, button) in buttons.enumerated() {
+            let row = index / columns
+            let column = index % columns
+            let x = buttonPadding + CGFloat(column) * horizontalStep
+            let y = buttonPadding + CGFloat(row) * (effectiveButtonHeight + buttonSpacing)
+            button.frame = NSRect(x: x, y: y, width: buttonSize.width, height: buttonSize.height)
         }
-        let contentWidth = max(scrollView.bounds.width, currentX > 0 ? currentX - buttonSpacing - buttonPadding * 2 + buttonPadding : 0)
-        contentView.frame = NSRect(x: 0, y: 0, width: contentWidth, height: availableHeight)
+
+        let rows = max(1, Int(ceil(Double(buttons.count) / Double(columns))))
+        let contentWidth = max(
+            scrollView.bounds.width,
+            CGFloat(columns) * effectiveButtonWidth + CGFloat(max(0, columns - 1)) * buttonSpacing
+        )
+        let contentHeight = max(
+            scrollView.bounds.height,
+            CGFloat(rows) * effectiveButtonHeight + CGFloat(max(0, rows - 1)) * buttonSpacing
+        )
+        contentView.frame = NSRect(x: 0, y: 0, width: contentWidth, height: contentHeight)
     }
 
     @objc private func didTapButton(_ sender: ApplicationShelfItemButton) {
@@ -200,10 +221,10 @@ extension ApplicationsShelfView: NSSearchFieldDelegate {
             moveSelection(offset: 1)
             return true
         case #selector(NSResponder.moveUp(_:)):
-            moveSelection(offset: -1)
+            moveSelection(offset: -itemsPerRow)
             return true
         case #selector(NSResponder.moveDown(_:)):
-            moveSelection(offset: 1)
+            moveSelection(offset: itemsPerRow)
             return true
         case #selector(NSResponder.insertNewline(_:)):
             if let item = selectedItem() {
@@ -265,4 +286,3 @@ private class ApplicationShelfItemButton: NSButton {
         }
     }
 }
-
