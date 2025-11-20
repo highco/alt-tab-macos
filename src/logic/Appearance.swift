@@ -16,7 +16,7 @@ class Appearance {
 
     static var applicationShelfItemPadding = CGFloat(12)
     static var applicationShelfItemSpacing = CGFloat(0)
-    static var applicationShelfItemCount = 16
+    static var applicationShelfItemCount = 36
 
     static var panelPadding = CGFloat(32)
     static var panelSectionSpacing = CGFloat(12)
